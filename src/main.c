@@ -37,44 +37,9 @@
 #define FRAME_MS 16
 uint8_t disp_buffer[BITMAP_SIZE(WIDTH, HEIGHT)];
 
-void blink_task(__unused void *params)
-{
-    bool on = false;
-    while (true)
-    {
-        vTaskDelay(LED_DELAY_MS);
-    }
-}
-
-int count = 0;
-TaskHandle_t taskDisplay;
-void main_task(__unused void *params)
-{
-    while (true)
-    {
-        count++;
-        vTaskDelay(pdMS_TO_TICKS(500));
-        xTaskNotifyGive(taskDisplay);
-    }
-}
-
 struct SharpDisp sd;
 struct BitmapImages bi;
 struct BitmapText text;
-
-static int16_t rand16(int16_t min, int16_t max)
-{
-    uint16_t v = 0x0000;
-    for (int i = 0; i < 16; ++i, v <<= 1)
-    {
-        if (rosc_hw->randombit)
-        {
-            v |= 0x0001;
-        }
-    }
-    return min + (v % (max - min));
-}
-uint32_t t = 0;
 
 static void show_an_image(uint32_t idx)
 {
@@ -82,14 +47,9 @@ static void show_an_image(uint32_t idx)
     int16_t height = image_height(&bi, idx);
     int16_t x = (WIDTH - width) / 2;
     int16_t y = (HEIGHT - height) / 2;
-    if (rand16(0, 100) > 50)
-    {
-        sd.bitmap.clear_byte = 0xFF;
-    }
-    else
-    {
-        sd.bitmap.clear_byte = 0x00;
-    }
+
+    sd.bitmap.clear_byte = 0x00;
+
     bitmap_clear(&sd.bitmap);
     image_draw(&bi, idx, x, y);
 }
@@ -132,10 +92,8 @@ void display_task(__unused void *params)
 void vLaunch(void)
 {
     TaskHandle_t task;
-    xTaskCreate(main_task, "MainThread", MAIN_TASK_STACK_SIZE, NULL, MAIN_TASK_PRIORITY, &task);
-    // start the led blinking
-    xTaskCreate(blink_task, "BlinkThread", BLINK_TASK_STACK_SIZE, NULL, BLINK_TASK_PRIORITY, NULL);
-    xTaskCreate(display_task, "DisplThread", DISPLAY_TASK_STACK_SIZE, NULL, DISPLAY_TASK_PRIORITY, &taskDisplay);
+
+    xTaskCreate(display_task, "displayDraw", DISPLAY_TASK_STACK_SIZE, NULL, DISPLAY_TASK_PRIORITY, NULL);
 
 #if configUSE_CORE_AFFINITY && configNUMBER_OF_CORES > 1
     // we must bind the main task to one core (well at least while the init is called)
