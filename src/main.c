@@ -4,14 +4,10 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-#include <sharpdisp/sharpdisp.h>
-#include <sharpdisp/bitmapimage.h>
-#include <sharpdisp/bitmapshapes.h>
-#include <sharpdisp/bitmaptext.h>
-#include <fonts/liberation_sans_36.h>
-#include "images.h"
-
 #include "hardware/structs/rosc.h"
+
+#include "display/disp_task.h"
+#include "button.h"
 
 // Which core to run on if configNUMBER_OF_CORES==1
 #ifndef RUN_FREE_RTOS_ON_CORE
@@ -22,78 +18,41 @@
 #define LED_DELAY_MS 21
 
 // Priorities of our threads - higher numbers are higher priority
-#define MAIN_TASK_PRIORITY (tskIDLE_PRIORITY + 2UL)
-#define BLINK_TASK_PRIORITY (tskIDLE_PRIORITY + 1UL)
-#define DISPLAY_TASK_PRIORITY (tskIDLE_PRIORITY + 4UL)
+#define MAIN_TASK_PRIORITY (tskIDLE_PRIORITY + 20UL)
+#define BUTTON_TASK_PRIORITY (tskIDLE_PRIORITY + 19UL)
+#define DISPLAY_TASK_PRIORITY (tskIDLE_PRIORITY + 19UL)
 
 // Stack sizes of our threads in words (4 bytes)
 #define MAIN_TASK_STACK_SIZE configMINIMAL_STACK_SIZE
-#define BLINK_TASK_STACK_SIZE configMINIMAL_STACK_SIZE
+#define BUTTON_TASK_STACK_SIZE configMINIMAL_STACK_SIZE
 #define DISPLAY_TASK_STACK_SIZE configMINIMAL_STACK_SIZE
 
-#define WIDTH 400
-#define HEIGHT 240
+extern TaskHandle_t displayHandle;
 
-#define FRAME_MS 16
-uint8_t disp_buffer[BITMAP_SIZE(WIDTH, HEIGHT)];
-
-struct SharpDisp sd;
-struct BitmapImages bi;
-struct BitmapText text;
-
-static void show_an_image(uint32_t idx)
+void (*actionBack)(void);
+void actionPower()
 {
-    int16_t width = image_width(&bi, idx);
-    int16_t height = image_height(&bi, idx);
-    int16_t x = (WIDTH - width) / 2;
-    int16_t y = (HEIGHT - height) / 2;
-
-    sd.bitmap.clear_byte = 0x00;
-
-    bitmap_clear(&sd.bitmap);
-    image_draw(&bi, idx, x, y);
 }
 
-static void sleep_for(uint32_t ms)
+void actionBackButton(enum BUTTON_ACTION act)
 {
-    const uint32_t steps = ms / 50;
-    for (uint32_t i = 0; i < steps; ++i)
+    switch (act)
     {
-        sharpdisp_refresh(&sd);
-        vTaskDelay(50);
-    }
-}
-
-void display_task(__unused void *params)
-{
-    const TickType_t xMaxExpectedBlockTime = pdMS_TO_TICKS(2000);
-
-    sharpdisp_init_default(&sd, disp_buffer, WIDTH, HEIGHT, 0xFF);
-    image_init(&bi, images, &sd.bitmap);
-    text_init(&text, liberation_sans_36, &sd.bitmap);
-    sd.bitmap.mode = BITMAP_INVERSE;
-    const uint32_t num_images = image_count(&bi);
-    while (true)
-    {
-        for (uint32_t idx = 0; idx < num_images; ++idx)
-        {
-            show_an_image(idx);
-            char str[5];
-            sprintf(str, "%d", idx);
-            // bitmap_clear(&sd.bitmap);
-            text.x = 0;
-            text.y = 0;
-            text_str(&text, str);
-            sleep_for(1000);
-        }
+    case release:
+        if (actionBack)
+            actionBack();
+    case holding:
+        actionPower();
     }
 }
 
 void vLaunch(void)
 {
     TaskHandle_t task;
+    setButtonHandler(0, actionBackButton);
 
-    xTaskCreate(display_task, "displayDraw", DISPLAY_TASK_STACK_SIZE, NULL, DISPLAY_TASK_PRIORITY, NULL);
+    xTaskCreate(display_task, "displayDraw", DISPLAY_TASK_STACK_SIZE, NULL, DISPLAY_TASK_PRIORITY, &displayHandle);
+    xTaskCreate(buttonTask, "buttonHandler", BUTTON_TASK_STACK_SIZE, NULL, BUTTON_TASK_PRIORITY, NULL);
 
 #if configUSE_CORE_AFFINITY && configNUMBER_OF_CORES > 1
     // we must bind the main task to one core (well at least while the init is called)

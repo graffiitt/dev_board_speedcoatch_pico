@@ -1,6 +1,10 @@
-#include "ui_menu.h"
+#include "uiElements/ui_menu.h"
 
-void drawMenu(menu_desc_t *mn)
+extern void (*actionBack)(void);
+
+static menu_desc_t *mn;
+
+void drawMenu()
 {
 }
 
@@ -17,5 +21,9 @@ void actionButtonDown(enum BUTTON_ACTION act)
 }
 
 void actionButtonSelect(enum BUTTON_ACTION act)
+{
+}
+
+void actionButtonBack()
 {
 }

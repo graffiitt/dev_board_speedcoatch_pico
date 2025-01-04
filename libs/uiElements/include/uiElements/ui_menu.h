@@ -21,6 +21,8 @@ typedef struct
     /// @brief
     /// call from push current item
     ui_item_handler action;
+    // call for redraw picture on srcren 
+    void (*drawFunction)(void);
 } menu_item_t;
 
 typedef struct menu_descrobe_t menu_desc_t;
@@ -34,11 +36,12 @@ struct menu_describe_t
     menu_desc_t *prevMenu;
 };
 
-void drawMenu(menu_desc_t *mn);
+void drawMenu();
 void appendItemToBack(menu_desc_t *mn, menu_item_t *item);
-
 // handlers for buttons
 void actionButtonUP(enum BUTTON_ACTION act);
 void actionButtonDown(enum BUTTON_ACTION act);
 void actionButtonSelect(enum BUTTON_ACTION act);
+void actionButtonBack();
+
 #endif
