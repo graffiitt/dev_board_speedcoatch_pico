@@ -32,6 +32,7 @@ target_link_libraries(${PROJECT_NAME}
     BITMAPTEXT
     BITMAPIMAGE
     LIBERATION_SANS_36
+    LIBERATION_SANS_24
     UI_LIBRARY
 )
 

@@ -6,27 +6,42 @@
 #include "task.h"
 #include "semphr.h"
 
-#include <sharpdisp/sharpdisp.h>
+#include <fonts/liberation_sans_24.h>
 #include <uiElements/ui_menu.h>
 #include "button.h"
 
 void (*drawFunction)(void);
 TaskHandle_t displayHandle;
 
-extern void (*actionBack)(void);
+extern void setupMainPage();
 
 static struct SharpDisp sd;
-static SemaphoreHandle_t dispSem;
+struct BitmapText text_24;
 static uint8_t disp_buffer_1[BITMAP_SIZE(WIDTH, HEIGHT)];
+static SemaphoreHandle_t dispSem;
 
-/// @brief 
+struct Bitmap *getBitmap()
+{
+    return &sd.bitmap;
+}
+
+struct BitmapText *getText_24()
+{
+    return &text_24;
+}
+
+/// @brief
 /// call for update information on screen
 void drawDisplay()
 {
-    xSemaphoreTake(dispSem, portMAX_DELAY);
+
     if (drawFunction)
+    {
+        xSemaphoreTake(dispSem, portMAX_DELAY);
+        bitmap_clear(&sd.bitmap);
         drawFunction();
-    xSemaphoreGive(dispSem);
+        xSemaphoreGive(dispSem);
+    }
     // xTaskNotifyGive(displayHandle);
 }
 
@@ -37,16 +52,11 @@ void display_task(__unused void *params)
     xSemaphoreGive(dispSem);
 
     sharpdisp_init_default(&sd, disp_buffer_1, WIDTH, HEIGHT, 0xFF);
+    text_init(&text_24, liberation_sans_24, &sd.bitmap);
     bitmap_clear(&sd.bitmap);
-    
-    // setup first menu
-    drawFunction = &drawMenu;
-    actionBack = &actionButtonBack;
-    setButtonHandler(1, actionButtonDown);
-    setButtonHandler(2, actionButtonUP);
-    setButtonHandler(3, actionButtonSelect);
-    //
-    
+
+    setupMainPage();
+
     while (true)
     {
         // ulTaskNotifyTake(pdTRUE, xMaxExpectedBlockTime);

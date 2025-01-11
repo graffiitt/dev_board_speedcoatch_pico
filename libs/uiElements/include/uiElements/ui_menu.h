@@ -1,9 +1,10 @@
 #ifndef UI_ELEMENTS
 #define UI_ELEMENTS
 
+#include "display/disp_task.h"
 #include "../cvector.h"
-#include "button.h"
 
+#define NUM_DISPLAY_ROWS 4
 
 enum MENU_ACTIONS
 {
@@ -12,7 +13,8 @@ enum MENU_ACTIONS
     down
 };
 
-typedef void (*ui_item_handler)(enum MENU_ACTIONS);
+typedef void (*ui_item_handler)(void);
+typedef struct menu_describe_t menu_desc_t;
 
 typedef struct
 {
@@ -21,27 +23,24 @@ typedef struct
     /// @brief
     /// call from push current item
     ui_item_handler action;
-    // call for redraw picture on srcren 
-    void (*drawFunction)(void);
-} menu_item_t;
 
-typedef struct menu_descrobe_t menu_desc_t;
+    // // call for redraw picture on srcren
+    // void (*drawFunction)(void);
+
+    menu_desc_t *prevMenu;
+    menu_desc_t *nextMenu;
+} menu_item_t;
 
 struct menu_describe_t
 {
     char *name_menu;
-    uint8_t current_item_select;
+    uint8_t current_row;
     cvector(menu_item_t) * items;
 
     menu_desc_t *prevMenu;
 };
 
 void drawMenu();
-void appendItemToBack(menu_desc_t *mn, menu_item_t *item);
-// handlers for buttons
-void actionButtonUP(enum BUTTON_ACTION act);
-void actionButtonDown(enum BUTTON_ACTION act);
-void actionButtonSelect(enum BUTTON_ACTION act);
-void actionButtonBack();
+void setMenu(menu_desc_t *menu);
 
 #endif

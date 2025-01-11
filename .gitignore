@@ -3,3 +3,4 @@
 tools/lib/__pycache__
 source/*.png
 libs/sharpDisplay
+.vscode/settings.json

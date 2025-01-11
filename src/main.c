@@ -38,10 +38,10 @@ void actionBackButton(enum BUTTON_ACTION act)
 {
     switch (act)
     {
-    case release:
+    case SHORT:
         if (actionBack)
             actionBack();
-    case holding:
+    case HOLDING:
         actionPower();
     }
 }
