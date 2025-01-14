@@ -4,7 +4,7 @@
 #include "display/disp_task.h"
 #include "../cvector.h"
 
-#define NUM_DISPLAY_ROWS 4
+#define NUM_DISPLAY_ROWS 5
 
 enum MENU_ACTIONS
 {
@@ -21,13 +21,9 @@ typedef struct
     char *nameItem;
     char *descrItem;
     /// @brief
-    /// call from push current item
-    ui_item_handler action;
-
-    // // call for redraw picture on srcren
-    // void (*drawFunction)(void);
-
-    menu_desc_t *prevMenu;
+    // call for setup custom screen
+   ui_item_handler action;
+   // void (*setupScreen)(void);
     menu_desc_t *nextMenu;
 } menu_item_t;
 
@@ -42,5 +38,6 @@ struct menu_describe_t
 
 void drawMenu();
 void setMenu(menu_desc_t *menu);
+void setupCallbacks();
 
 #endif

@@ -14,9 +14,11 @@ void (*drawFunction)(void);
 TaskHandle_t displayHandle;
 
 extern void setupMainPage();
+extern void setupSettingsPage();
 
 static struct SharpDisp sd;
 struct BitmapText text_24;
+static const char *statusStroke = NULL;
 static uint8_t disp_buffer_1[BITMAP_SIZE(WIDTH, HEIGHT)];
 static SemaphoreHandle_t dispSem;
 
@@ -35,14 +37,24 @@ struct BitmapText *getText_24()
 void drawDisplay()
 {
 
-    if (drawFunction)
-    {
-        xSemaphoreTake(dispSem, portMAX_DELAY);
-        bitmap_clear(&sd.bitmap);
-        drawFunction();
-        xSemaphoreGive(dispSem);
-    }
+    if (drawFunction == NULL)
+        return;
+    xSemaphoreTake(dispSem, portMAX_DELAY);
+    bitmap_clear(&sd.bitmap);
+    drawFunction();
+    bitmap_hline(&sd.bitmap, 0, 26, WIDTH);
+    text_24.x=0;
+    text_24.y=0;
+
+    text_str(&text_24, statusStroke);
+    xSemaphoreGive(dispSem);
+
     // xTaskNotifyGive(displayHandle);
+}
+
+void drawStatusStr(const char *str)
+{
+    statusStroke = str;
 }
 
 void display_task(__unused void *params)
@@ -56,6 +68,7 @@ void display_task(__unused void *params)
     bitmap_clear(&sd.bitmap);
 
     setupMainPage();
+    setupSettingsPage();
 
     while (true)
     {

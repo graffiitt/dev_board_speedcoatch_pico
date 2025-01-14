@@ -14,8 +14,8 @@ void drawMenu()
         return;
 
     // coordinates for start draw menu;
-    uint8_t x = 7;
-    uint8_t y = 16;
+    uint8_t x = 25;
+    uint8_t y = 27;
 
     getText_24()->x = x;
     getText_24()->y = y;
@@ -30,20 +30,20 @@ void drawMenu()
         if (item < cvector_size(*currentMenu->items))
         {
             text_str(getText_24(), cvector_at(*currentMenu->items, item)->nameItem);
-            // st7567_WriteString(x, y, cvector_at(*items, item)->text, FontStyle_veranda_9);
+
+            getText_24()->x = WIDTH - text_str_width(getText_24(), cvector_at(*currentMenu->items, item)->descrItem) - 10;
+            text_str(getText_24(), cvector_at(*currentMenu->items, item)->descrItem);
             getText_24()->y += text_height(getText_24());
             getText_24()->x = x;
-            // y += 12;
         }
     }
-    getText_24()->y = 16 + text_height(getText_24()) * (currentMenu->current_row > (NUM_DISPLAY_ROWS - 1) ? (NUM_DISPLAY_ROWS - 1) : currentMenu->current_row);
+    getText_24()->y = y + text_height(getText_24()) * (currentMenu->current_row > (NUM_DISPLAY_ROWS - 1) ? (NUM_DISPLAY_ROWS - 1) : currentMenu->current_row);
 
     getText_24()->x = 0;
     text_char(getText_24(), '>');
-    // st7567_WriteChar(0, y, '>', FontStyle_veranda_9);
 }
 
-void actionButtonUP(enum BUTTON_ACTION act)
+static void actionButtonUP(enum BUTTON_ACTION act)
 {
     switch (act)
     {
@@ -51,13 +51,21 @@ void actionButtonUP(enum BUTTON_ACTION act)
 
         break;
     case SHORT:
-        currentMenu->current_row++;
+        if (currentMenu->current_row > cvector_size(*currentMenu->items) - 1)
+        {
+            currentMenu->current_row = cvector_size(*currentMenu->items) - 1;
+        }
+        else
+        {
+
+            currentMenu->current_row++;
+        }
         drawDisplay();
         break;
     }
 }
 
-void actionButtonDown(enum BUTTON_ACTION act)
+static void actionButtonDown(enum BUTTON_ACTION act)
 {
     switch (act)
     {
@@ -72,19 +80,31 @@ void actionButtonDown(enum BUTTON_ACTION act)
     }
 }
 
-void actionButtonSelect(enum BUTTON_ACTION act)
+static void actionButtonSelect(enum BUTTON_ACTION act)
 {
+    menu_item_t *item = cvector_at(*currentMenu->items, currentMenu->current_row);
+    if (item->action != NULL)
+        item->action();
+    if (item->nextMenu != NULL)
+        setMenu(item->nextMenu);
 }
 
-void actionBackBt()
+static void actionBackBt()
 {
     if (currentMenu->prevMenu == NULL)
         return;
+    setMenu(currentMenu->prevMenu);
 }
 
 void setMenu(menu_desc_t *menu)
 {
     currentMenu = menu;
+    drawStatusStr(currentMenu->name_menu);
+    drawDisplay();
+}
+
+void setupCallbacks()
+{
     actionBack = actionBackBt;
     setButtonHandler(1, actionButtonDown);
     setButtonHandler(2, actionButtonUP);
