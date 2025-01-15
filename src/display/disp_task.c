@@ -43,8 +43,8 @@ void drawDisplay()
     bitmap_clear(&sd.bitmap);
     drawFunction();
     bitmap_hline(&sd.bitmap, 0, 26, WIDTH);
-    text_24.x=0;
-    text_24.y=0;
+    text_24.x = 0;
+    text_24.y = 0;
 
     text_str(&text_24, statusStroke);
     xSemaphoreGive(dispSem);
