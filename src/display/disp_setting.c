@@ -2,7 +2,7 @@
 #include <uiElements/ui_menu.h>
 #include "button.h"
 
-static char *nameItems[] = {"bluetooth", "view elements", "gps info", "item1", "item2", "item3"};
+static char *nameItems[] = {"bluetooth", "view elements", "gps info", "about", "item2", "item3"};
 
 static cvector(menu_item_t) main_settings_items = NULL;
 extern menu_desc_t main_menu;
@@ -22,6 +22,4 @@ void setupSettingsPage()
     cvector_push_back(main_settings_items, item_5);
     menu_item_t item_6 = {nameItems[5], NULL, NULL, NULL};
     cvector_push_back(main_settings_items, item_6);
-    menu_item_t item_7 = {nameItems[6], NULL, NULL, NULL};
-    cvector_push_back(main_settings_items, item_7);
 }

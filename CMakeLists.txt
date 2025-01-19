@@ -20,7 +20,6 @@ endforeach(source)
 
 add_executable(${PROJECT_NAME}
 src/main.c
-src/images.c
 ${CPPFILE}
 )
 
@@ -33,7 +32,9 @@ target_link_libraries(${PROJECT_NAME}
     BITMAPIMAGE
     LIBERATION_SANS_36
     LIBERATION_SANS_24
+    
     UI_LIBRARY
+    hardware_rtc
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE

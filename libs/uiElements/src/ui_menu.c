@@ -15,7 +15,7 @@ void drawMenu()
 
     // coordinates for start draw menu;
     uint8_t x = 25;
-    uint8_t y = 27;
+    uint8_t y = 37;
 
     getText_24()->x = x;
     getText_24()->y = y;
@@ -33,11 +33,11 @@ void drawMenu()
 
             getText_24()->x = WIDTH - text_str_width(getText_24(), cvector_at(*currentMenu->items, item)->descrItem) - 10;
             text_str(getText_24(), cvector_at(*currentMenu->items, item)->descrItem);
-            getText_24()->y += text_height(getText_24());
+            getText_24()->y += text_height(getText_24()) + 7;
             getText_24()->x = x;
         }
     }
-    getText_24()->y = y + text_height(getText_24()) * (currentMenu->current_row > (NUM_DISPLAY_ROWS - 1) ? (NUM_DISPLAY_ROWS - 1) : currentMenu->current_row);
+    getText_24()->y = y + (text_height(getText_24()) + 7) * (currentMenu->current_row > (NUM_DISPLAY_ROWS - 1) ? (NUM_DISPLAY_ROWS - 1) : currentMenu->current_row);
 
     getText_24()->x = 0;
     text_char(getText_24(), '>');
@@ -82,11 +82,17 @@ static void actionButtonDown(enum BUTTON_ACTION act)
 
 static void actionButtonSelect(enum BUTTON_ACTION act)
 {
-    menu_item_t *item = cvector_at(*currentMenu->items, currentMenu->current_row);
-    if (item->action != NULL)
-        item->action();
-    if (item->nextMenu != NULL)
-        setMenu(item->nextMenu);
+    switch (act)
+    {
+    case PUSH:
+        break;
+    case SHORT:
+        menu_item_t *item = cvector_at(*currentMenu->items, currentMenu->current_row);
+        if (item->action != NULL)
+            item->action();
+        if (item->nextMenu != NULL)
+            setMenu(item->nextMenu);
+    }
 }
 
 static void actionBackBt()

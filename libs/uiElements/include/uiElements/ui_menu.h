@@ -25,6 +25,8 @@ typedef struct
    ui_item_handler action;
    // void (*setupScreen)(void);
     menu_desc_t *nextMenu;
+
+    // TODO add callbacks for long button event
 } menu_item_t;
 
 struct menu_describe_t

@@ -2,7 +2,7 @@
 #include <uiElements/ui_menu.h>
 #include "button.h"
 
-static char *nameItems[] = {"display", "train", "memory", "settings", "item1", "item2", "item3"};
+static char *nameItems[] = {"display", "train", "memory", "settings", "watch", "item2", "item3"};
 char *desc[] = {"qwerty"};
 static cvector(menu_item_t) main_menu_items = NULL;
 menu_desc_t main_menu = {"menu", 0, &main_menu_items, NULL};
