@@ -1,11 +1,11 @@
 #include <sharpdisp/sharpdisp.h>
 #include <uiElements/ui_menu.h>
+#include <display/page.h>
 #include "button.h"
 
-static char *nameItems[] = {"bluetooth", "view elements", "gps info", "about", "item2", "item3"};
+static char *nameItems[] = {"bluetooth", "view elements", "gps info", "time setup", "item2", "about"};
 
 static cvector(menu_item_t) main_settings_items = NULL;
-extern menu_desc_t main_menu;
 menu_desc_t settings_menu = {"settings", 0, &main_settings_items, &main_menu};
 
 void setupSettingsPage()

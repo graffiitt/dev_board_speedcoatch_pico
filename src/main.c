@@ -15,8 +15,8 @@
 
 // Priorities of our threads - higher numbers are higher priority
 #define MAIN_TASK_PRIORITY (tskIDLE_PRIORITY + 20UL)
-#define BUTTON_TASK_PRIORITY (tskIDLE_PRIORITY + 19UL)
-#define DISPLAY_TASK_PRIORITY (tskIDLE_PRIORITY + 19UL)
+#define BUTTON_TASK_PRIORITY (tskIDLE_PRIORITY + 21UL)
+#define DISPLAY_TASK_PRIORITY (tskIDLE_PRIORITY + 21UL)
 
 // Stack sizes of our threads in words (4 bytes)
 #define MAIN_TASK_STACK_SIZE configMINIMAL_STACK_SIZE
@@ -48,7 +48,7 @@ void mainTask(__unused void *params)
 
     while (1)
     {
-        printf("main %d\n", get_core_num());
+        // printf("main %d\n", get_core_num());
         // taskYIELD();
     }
 };
@@ -72,6 +72,17 @@ int main(void)
     timer_hw->dbgpause = 0x2;
 
     stdio_init_all();
+
+    rtc_init();
+    datetime_t t = {
+        .year = 2025,
+        .month = 01,
+        .day = 020,
+        .dotw = 1, // 0 is Sunday, so 5 is Friday
+        .hour = 15,
+        .min = 45,
+        .sec = 00};
+    rtc_set_datetime(&t);
 
     vLaunch();
     return 0;

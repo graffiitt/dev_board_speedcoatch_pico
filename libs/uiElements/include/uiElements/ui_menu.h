@@ -40,6 +40,6 @@ struct menu_describe_t
 
 void drawMenu();
 void setMenu(menu_desc_t *menu);
-void setupCallbacks();
+void setupCallbacksMenu();
 
 #endif

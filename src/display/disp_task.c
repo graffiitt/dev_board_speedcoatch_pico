@@ -9,6 +9,8 @@
 
 #include <sharpdisp/bitmapimage.h>
 #include <fonts/liberation_sans_24.h>
+#include <fonts/liberation_sans_80.h>
+
 #include <uiElements/ui_menu.h>
 #include "button.h"
 
@@ -20,6 +22,7 @@ extern void setupSettingsPage();
 
 static struct SharpDisp sd;
 struct BitmapText text_24;
+struct BitmapText text_80;
 struct BitmapImages start_image;
 static const char *status_line = NULL;
 static uint8_t disp_buffer_1[BITMAP_SIZE(WIDTH, HEIGHT)];
@@ -35,6 +38,11 @@ struct BitmapText *getText_24()
     return &text_24;
 }
 
+struct BitmapText *getText_80()
+{
+    return &text_80;
+}
+
 /// @brief
 /// call for update information on screen
 void drawDisplay()
@@ -45,11 +53,13 @@ void drawDisplay()
     xSemaphoreTake(dispSem, portMAX_DELAY);
     bitmap_clear(&sd.bitmap);
     drawFunction();
-    bitmap_hline(&sd.bitmap, 0, 26, WIDTH);
-    text_24.x = 0;
-    text_24.y = 0;
-
-    text_str(&text_24, status_line);
+    if (status_line != NULL)
+    {
+        bitmap_hline(&sd.bitmap, 0, 26, WIDTH);
+        text_24.x = 0;
+        text_24.y = 0;
+        text_str(&text_24, status_line);
+    }
     xSemaphoreGive(dispSem);
 }
 
@@ -76,15 +86,16 @@ void display_task(__unused void *params)
 
     sharpdisp_init_default(&sd, disp_buffer_1, WIDTH, HEIGHT, 0xFF);
     text_init(&text_24, liberation_sans_24, &sd.bitmap);
+    text_init(&text_80, liberation_sans_80, &sd.bitmap);
     image_init(&start_image, image_start_logo, &sd.bitmap);
     bitmap_clear(&sd.bitmap);
 
     show_image(0, &start_image);
-    text_24.x = (WIDTH - text_str_width(&text_24, "SPECTER"))/2;
+    text_24.x = (WIDTH - text_str_width(&text_24, "SPECTER")) / 2;
     text_24.y = 207;
     text_str(&text_24, "SPECTER");
 
-    const uint32_t steps = 5000 / 50;
+    const uint32_t steps = 2500 / 50;
     for (uint32_t i = 0; i < steps; ++i)
     {
         sharpdisp_refresh(&sd);

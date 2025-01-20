@@ -13,8 +13,10 @@ extern void (*drawFunction)(void);
 
 struct Bitmap *getBitmap();
 struct BitmapText *getText_24();
+struct BitmapText *getText_80();
+
 void drawDisplay();
-void drawStatusStr(const char* str);
+void drawStatusStr(const char *str);
 void display_task(__unused void *params);
 
 #endif

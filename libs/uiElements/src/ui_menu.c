@@ -109,7 +109,7 @@ void setMenu(menu_desc_t *menu)
     drawDisplay();
 }
 
-void setupCallbacks()
+void setupCallbacksMenu()
 {
     actionBack = actionBackBt;
     setButtonHandler(1, actionButtonDown);
