@@ -7,8 +7,6 @@
 #include "task.h"
 
 static char *days[] = {"Sunday", "Monday", "Tuesday", "Wensday", "Thursday", "Friday", "Saturday"};
-static TaskHandle_t task;
-extern void (*actionBack)(void);
 
 static void watchStop();
 
@@ -36,14 +34,16 @@ static void painter()
     }
 }
 
+static bool stateTask = true; 
 static void watchTask()
 {
 
-    while (1)
+    while (stateTask)
     {
         drawDisplay();
         vTaskDelay(100);
     }
+    vTaskDelete(NULL);
 }
 
 void watchDisplay()
@@ -54,12 +54,14 @@ void watchDisplay()
     setButtonHandler(2, NULL);
     setButtonHandler(3, NULL);
     drawStatusStr(NULL);
-    xTaskCreate(watchTask, "watchTask", 150, NULL, 10, &task);
+    stateTask = true;
+    xTaskCreate(watchTask, "watchTask", 120, NULL, 10, NULL);
 }
 
 void watchStop()
 {
-    vTaskDelete(task);
+    // vTaskDelete(task);
+    stateTask = false;
 
     drawFunction = &drawMenu;
     setupCallbacksMenu();

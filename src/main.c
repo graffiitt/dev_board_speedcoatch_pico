@@ -42,14 +42,18 @@ void actionBackButton(enum BUTTON_ACTION act)
     }
 }
 
+static char taskList[500] = {0};
 void mainTask(__unused void *params)
 {
     xTaskCreate(buttonTask, "buttonHandler", BUTTON_TASK_STACK_SIZE, NULL, BUTTON_TASK_PRIORITY, NULL);
+        vTaskDelay(pdMS_TO_TICKS(5000));
 
     while (1)
     {
-        // printf("main %d\n", get_core_num());
-        // taskYIELD();
+        printf("task states\n");
+        vTaskList(taskList);
+        printf("%s\n", taskList);
+        vTaskDelay(pdMS_TO_TICKS(500));
     }
 };
 
@@ -58,7 +62,7 @@ void vLaunch(void)
     xTaskHandle mainTsk;
     setButtonHandler(0, actionBackButton);
 
-    xTaskCreate(mainTask, "mainTask", MAIN_TASK_STACK_SIZE, NULL, tskIDLE_PRIORITY, &mainTsk);
+    xTaskCreate(mainTask, "mainTask", 526, NULL, tskIDLE_PRIORITY, &mainTsk);
     xTaskCreate(display_task, "displayDraw", DISPLAY_TASK_STACK_SIZE, NULL, DISPLAY_TASK_PRIORITY, &displayHandle);
     // we must bind the main task to one core (well at least while the init is called)
     vTaskCoreAffinitySet(mainTsk, 1);
