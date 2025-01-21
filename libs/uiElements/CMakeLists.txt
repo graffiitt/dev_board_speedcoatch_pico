@@ -14,4 +14,6 @@ button_handler
 )
 target_sources(UI_LIBRARY  INTERFACE
     ${CMAKE_CURRENT_LIST_DIR}/src/ui_menu.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/ui_spinbox_int.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/ui_spinbox_screen.c
 )

@@ -16,7 +16,7 @@ void setupSettingsPage()
     cvector_push_back(main_settings_items, item_2);
     menu_item_t item_3 = {nameItems[2], NULL, NULL, NULL};
     cvector_push_back(main_settings_items, item_3);
-    menu_item_t item_4 = {nameItems[3], NULL, NULL, NULL};
+    menu_item_t item_4 = {nameItems[3], NULL, &watchSettingsDisplay, NULL};
     cvector_push_back(main_settings_items, item_4);
     menu_item_t item_5 = {nameItems[4], NULL, NULL, NULL};
     cvector_push_back(main_settings_items, item_5);

@@ -104,7 +104,8 @@ void display_task(__unused void *params)
 
     setupMainPage();
     setupSettingsPage();
-
+    setupWatchSettingsDisplay();
+    
     while (true)
     {
         xSemaphoreTake(dispSem, portMAX_DELAY);

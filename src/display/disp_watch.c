@@ -1,13 +1,13 @@
 #include <sharpdisp/sharpdisp.h>
-#include <uiElements/ui_menu.h>
-#include "display/page.h"
+#include "display/disp_watch.h"
 #include "button.h"
 #include "hardware/rtc.h"
 #include "FreeRTOS.h"
 #include "task.h"
 
-static char *days[] = {"Sunday", "Monday", "Tuesday", "Wensday", "Thursday", "Friday", "Saturday"};
+#include "uiElements/ui_spinbox_int.h"
 
+static bool stateTask = true;
 static void watchStop();
 
 static void painter()
@@ -27,14 +27,13 @@ static void painter()
         sprintf(str, "%02d:%02d:%02d", t.hour, t.min, t.sec);
 
         text_str(getText_80(), str);
-        getText_24()->x=0;
-        getText_24()->y=137;
-        sprintf(str, "%2d.%2d \t%s", t.day, t.month, days[t.dotw]);
+        getText_24()->x = 0;
+        getText_24()->y = 137;
+        sprintf(str, "%2d.%2d", t.day, t.month);
         text_str(getText_24(), str);
     }
 }
 
-static bool stateTask = true; 
 static void watchTask()
 {
 
@@ -46,8 +45,11 @@ static void watchTask()
     vTaskDelete(NULL);
 }
 
-void watchDisplay()
+void watchDisplay(enum MENU_ACTIONS action)
 {
+    if (action != MENU_ACTIONS_RUN)
+        return;
+
     drawFunction = &painter;
     actionBack = watchStop;
     setButtonHandler(1, NULL);
@@ -55,7 +57,7 @@ void watchDisplay()
     setButtonHandler(3, NULL);
     drawStatusStr(NULL);
     stateTask = true;
-    xTaskCreate(watchTask, "watchTask", 120, NULL, 10, NULL);
+    xTaskCreate(watchTask, "watchTask", 140, NULL, 10, NULL);
 }
 
 void watchStop()

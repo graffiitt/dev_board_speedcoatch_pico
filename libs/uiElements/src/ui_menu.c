@@ -1,5 +1,4 @@
 #include "uiElements/ui_menu.h"
-#include <sharpdisp/bitmaptext.h>
 #include "button.h"
 
 extern void (*actionBack)(void);
@@ -89,7 +88,7 @@ static void actionButtonSelect(enum BUTTON_ACTION act)
     case SHORT:
         menu_item_t *item = cvector_at(*currentMenu->items, currentMenu->current_row);
         if (item->action != NULL)
-            item->action();
+            item->action(MENU_ACTIONS_RUN);
         if (item->nextMenu != NULL)
             setMenu(item->nextMenu);
     }

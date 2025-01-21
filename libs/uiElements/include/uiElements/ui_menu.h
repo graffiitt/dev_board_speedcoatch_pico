@@ -8,12 +8,12 @@
 
 enum MENU_ACTIONS
 {
-    run,
-    up,
-    down
+    MENU_ACTIONS_RUN,
+    MENU_ACTIONS_UP,
+    MENU_ACTIONS_DOWN
 };
 
-typedef void (*ui_item_handler)(void);
+typedef void (*ui_item_handler)(enum MENU_ACTIONS);
 typedef struct menu_describe_t menu_desc_t;
 
 typedef struct
