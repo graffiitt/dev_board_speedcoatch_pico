@@ -2,5 +2,7 @@
 .DS_Store
 tools/lib/__pycache__
 source/*.png
+source/*.svg
 libs/sharpDisplay
 .vscode/settings.json
+dev_board_specter.code-workspace

@@ -21,7 +21,7 @@ typedef struct
     char *nameItem;
     char *descrItem;
     /// @brief
-    // call for setup custom screen
+
    ui_item_handler action;
    // void (*setupScreen)(void);
     menu_desc_t *nextMenu;

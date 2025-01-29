@@ -9,6 +9,7 @@
 
 #include "display/disp_task.h"
 #include "button.h"
+#include "w25qxx/w25qxx.h"
 
 // Delay between led blinking
 #define LED_DELAY_MS 21
@@ -76,7 +77,7 @@ int main(void)
     timer_hw->dbgpause = 0x2;
 
     stdio_init_all();
-
+    initSPI();
     rtc_init();
     datetime_t t = {
         .year = 2025,

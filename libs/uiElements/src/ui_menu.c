@@ -46,8 +46,10 @@ static void actionButtonUP(enum BUTTON_ACTION act)
 {
     switch (act)
     {
-    case PUSH:
-
+    case HOLDING:
+        menu_item_t *item = cvector_at(*currentMenu->items, currentMenu->current_row);
+        if (item->action != NULL)
+            item->action(MENU_ACTIONS_DOWN);
         break;
     case SHORT:
         if (currentMenu->current_row > cvector_size(*currentMenu->items) - 1)
@@ -56,7 +58,6 @@ static void actionButtonUP(enum BUTTON_ACTION act)
         }
         else
         {
-
             currentMenu->current_row++;
         }
         drawDisplay();
@@ -68,8 +69,10 @@ static void actionButtonDown(enum BUTTON_ACTION act)
 {
     switch (act)
     {
-    case PUSH:
-
+    case HOLDING:
+        menu_item_t *item = cvector_at(*currentMenu->items, currentMenu->current_row);
+        if (item->action != NULL)
+            item->action(MENU_ACTIONS_UP);
         break;
     case SHORT:
         if (currentMenu->current_row > 0)

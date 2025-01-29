@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.13)
 
 set(PICO_BOARD pico_w CACHE STRING "Board type")
-set(FREERTOS_KERNEL_PATH /Users/vlad/programming/pico/FreeRTOS-Kernel)
+
 set(CONFIG_PATH ${CMAKE_CURRENT_LIST_DIR}/configs)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
@@ -34,6 +34,7 @@ target_link_libraries(${PROJECT_NAME}
     LIBERATION_SANS_80
     
     UI_LIBRARY
+    W25QXX
     hardware_rtc
 )
 
@@ -51,6 +52,7 @@ add_compile_options(-Wall
 add_subdirectory(libs/sharpDisplay)
 add_subdirectory(libs/uiElements)
 add_subdirectory(libs/pico-button-handler)
+add_subdirectory(libs/w25qxx)
 
 pico_add_extra_outputs(${PROJECT_NAME})
 pico_enable_stdio_usb(${PROJECT_NAME} 1)

@@ -1,5 +1,6 @@
 #include "display/disp_task.h"
-#include "display/image_start_logo.h"
+#include "display/page.h"
+#include "display/status_line_images.h"
 
 #include <stdio.h>
 
@@ -13,20 +14,20 @@
 
 #include <uiElements/ui_menu.h>
 #include "button.h"
+#include "w25qxx/w25qxx.h"
 
 void (*drawFunction)(void);
 TaskHandle_t displayHandle;
 
-extern void setupMainPage();
-extern void setupSettingsPage();
-
 static struct SharpDisp sd;
 struct BitmapText text_24;
 struct BitmapText text_80;
-struct BitmapImages start_image;
+struct BitmapImages status_images;
 static const char *status_line = NULL;
 static uint8_t disp_buffer_1[BITMAP_SIZE(WIDTH, HEIGHT)];
 static SemaphoreHandle_t dispSem;
+
+extern bool current_state_ble;
 
 struct Bitmap *getBitmap()
 {
@@ -47,19 +48,23 @@ struct BitmapText *getText_80()
 /// call for update information on screen
 void drawDisplay()
 {
-
     if (drawFunction == NULL)
         return;
+
     xSemaphoreTake(dispSem, portMAX_DELAY);
     bitmap_clear(&sd.bitmap);
     drawFunction();
-    if (status_line != NULL)
+
+    bitmap_hline(&sd.bitmap, 0, 26, WIDTH);
+    text_24.x = 0;
+    text_24.y = 0;
+    text_str(&text_24, status_line);
+
+    if (current_state_ble)
     {
-        bitmap_hline(&sd.bitmap, 0, 26, WIDTH);
-        text_24.x = 0;
-        text_24.y = 0;
-        text_str(&text_24, status_line);
+        image_draw(&status_images, BLUETOOTH_IMG, 370, 0);
     }
+
     xSemaphoreGive(dispSem);
 }
 
@@ -78,6 +83,29 @@ static void show_image(uint32_t idx, struct BitmapImages *bitmap)
     image_draw(bitmap, idx, x, y);
 }
 
+static void showStartScreen()
+{
+    const char str_logo[] = "SPECTER";
+    struct BitmapImages start_image;
+    uint8_t *image = malloc(1390);
+
+    read_data(12800000, image, 1390);
+    image_init(&start_image, image, &sd.bitmap);
+    show_image(0, &start_image);
+    free(image);
+
+    text_24.x = (WIDTH - text_str_width(&text_24, str_logo)) / 2;
+    text_24.y = 207;
+    text_str(&text_24, str_logo);
+
+    const uint32_t steps = 2500 / 50;
+    for (uint32_t i = 0; i < steps; ++i)
+    {
+        sharpdisp_refresh(&sd);
+        vTaskDelay(pdMS_TO_TICKS(50));
+    }
+}
+
 void display_task(__unused void *params)
 {
     const TickType_t xMaxExpectedBlockTime = pdMS_TO_TICKS(50);
@@ -87,25 +115,15 @@ void display_task(__unused void *params)
     sharpdisp_init_default(&sd, disp_buffer_1, WIDTH, HEIGHT, 0xFF);
     text_init(&text_24, liberation_sans_24, &sd.bitmap);
     text_init(&text_80, liberation_sans_80, &sd.bitmap);
-    image_init(&start_image, image_start_logo, &sd.bitmap);
+    image_init(&status_images, status_line_images, &sd.bitmap);
     bitmap_clear(&sd.bitmap);
 
-    show_image(0, &start_image);
-    text_24.x = (WIDTH - text_str_width(&text_24, "SPECTER")) / 2;
-    text_24.y = 207;
-    text_str(&text_24, "SPECTER");
-
-    const uint32_t steps = 2500 / 50;
-    for (uint32_t i = 0; i < steps; ++i)
-    {
-        sharpdisp_refresh(&sd);
-        vTaskDelay(pdMS_TO_TICKS(50));
-    }
+    showStartScreen();
 
     setupMainPage();
     setupSettingsPage();
     setupWatchSettingsDisplay();
-    
+
     while (true)
     {
         xSemaphoreTake(dispSem, portMAX_DELAY);
