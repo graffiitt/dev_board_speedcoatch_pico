@@ -21,22 +21,26 @@
 #define CMD_PAGE_ERASE      0xD8
 #define CMD_CHIP_ERASE      0xC7
 #define CMD_READ_ID         0x90
+#define CMD_POWER_DOWN 0xB9        
+#define CMD_RELEASE_POWER_DOWN 0xAB  
 
 #define SECTOR_SIZE 4096
 #define PAGE_SIZE   256
 
 void initSPI();
+void flash_enter_power_down();
+void flash_exit_power_down();
 void read_flash_id();
 
 /// @brief  clear 4096 bytes
 /// @param addr number sector
-void erase_sector(uint32_t addr);  
+void flash_erase_sector(uint32_t addr);  
 
 /// @brief clear 256 bytes
 /// @param addr number page
-void erase_page(uint32_t addr);    
+void flash_erase_page(uint32_t addr);    
 
-void write_data(uint32_t addr, const uint8_t *data, size_t length);
-void read_data(uint32_t addr, uint8_t *buffer, size_t length);
+void flash_write_data(uint32_t addr, const uint8_t *data, size_t length);
+void flash_read_data(uint32_t addr, uint8_t *buffer, size_t length);
 
 #endif

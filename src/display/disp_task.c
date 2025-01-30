@@ -14,15 +14,15 @@
 
 #include <uiElements/ui_menu.h>
 #include "button.h"
-#include "w25qxx/w25qxx.h"
+
 
 void (*drawFunction)(void);
 TaskHandle_t displayHandle;
 
 static struct SharpDisp sd;
-struct BitmapText text_24;
-struct BitmapText text_80;
-struct BitmapImages status_images;
+static struct BitmapText text_24;
+static struct BitmapText text_80;
+static struct BitmapImages status_images;
 static const char *status_line = NULL;
 static uint8_t disp_buffer_1[BITMAP_SIZE(WIDTH, HEIGHT)];
 static SemaphoreHandle_t dispSem;
@@ -62,7 +62,7 @@ void drawDisplay()
 
     if (current_state_ble)
     {
-        image_draw(&status_images, BLUETOOTH_IMG, 370, 0);
+        image_draw(&status_images, BLUETOOTH_IMG, 346, 0);
     }
 
     xSemaphoreGive(dispSem);
@@ -89,7 +89,7 @@ static void showStartScreen()
     struct BitmapImages start_image;
     uint8_t *image = malloc(1390);
 
-    read_data(12800000, image, 1390);
+    flash_read_data(12800000, image, 1390);
     image_init(&start_image, image, &sd.bitmap);
     show_image(0, &start_image);
     free(image);
@@ -123,7 +123,7 @@ void display_task(__unused void *params)
     setupMainPage();
     setupSettingsPage();
     setupWatchSettingsDisplay();
-
+    
     while (true)
     {
         xSemaphoreTake(dispSem, portMAX_DELAY);
@@ -133,4 +133,9 @@ void display_task(__unused void *params)
         xSemaphoreGive(dispSem);
         vTaskDelay(pdMS_TO_TICKS(100));
     }
+}
+
+void drawStatusImage(int id, uint16_t x, uint16_t y)
+{
+    image_draw(&status_images, id, x, y);
 }

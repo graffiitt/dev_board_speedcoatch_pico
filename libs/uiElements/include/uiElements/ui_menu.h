@@ -18,7 +18,7 @@ typedef struct menu_describe_t menu_desc_t;
 
 typedef struct
 {
-    char *nameItem;
+    const char *nameItem;
     char *descrItem;
     /// @brief
 

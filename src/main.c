@@ -47,7 +47,7 @@ static char taskList[500] = {0};
 void mainTask(__unused void *params)
 {
     xTaskCreate(buttonTask, "buttonHandler", BUTTON_TASK_STACK_SIZE, NULL, BUTTON_TASK_PRIORITY, NULL);
-        vTaskDelay(pdMS_TO_TICKS(5000));
+    vTaskDelay(pdMS_TO_TICKS(5000));
 
     while (1)
     {
@@ -76,7 +76,7 @@ int main(void)
 {
     timer_hw->dbgpause = 0x2;
 
-    stdio_init_all();
+    // stdio_init_all();
     initSPI();
     rtc_init();
     datetime_t t = {

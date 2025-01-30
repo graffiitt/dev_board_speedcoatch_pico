@@ -4,12 +4,6 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 
-#if (INIT_DEBUG == 1)
-char buf[64] = {
-    0,
-};
-#endif
-
 #if (_W25QXX_USE_FREERTOS == 1)
 #define W25qxx_Delay(delay) vTaskDelay(delay)
 #include "FreeRTOS.h"
@@ -72,8 +66,18 @@ void initSPI()
     spi_init(SPI_PORT, 40000 * 1000);
 }
 
+void flash_enter_power_down()
+{
+    send_command(CMD_POWER_DOWN);
+}
+
+void flash_exit_power_down()
+{
+    send_command(CMD_RELEASE_POWER_DOWN);
+}
+
 // Чтение ID чипа
-void read_flash_id()
+void flash_read_flash_id()
 {
     uint8_t cmd[] = {CMD_READ_ID, 0x00, 0x00, 0x00};
     uint8_t id[2];
@@ -84,7 +88,7 @@ void read_flash_id()
     printf("Manufacturer ID: 0x%02X, Device ID: 0x%02X\n", id[0], id[1]);
 }
 
-void erase_sector(uint32_t addr)
+void flash_erase_sector(uint32_t addr)
 {
     uint8_t cmd[] = {CMD_SECTOR_ERASE, (addr >> 16) & 0xFF, (addr >> 8) & 0xFF, addr & 0xFF};
     send_command(CMD_WRITE_ENABLE);
@@ -94,7 +98,7 @@ void erase_sector(uint32_t addr)
     wait_for_ready();
 }
 
-void erase_page(uint32_t addr)
+void flash_erase_page(uint32_t addr)
 {
     uint8_t cmd[] = {CMD_PAGE_ERASE, (addr >> 16) & 0xFF, (addr >> 8) & 0xFF, addr & 0xFF};
     send_command(CMD_WRITE_ENABLE);
@@ -105,7 +109,7 @@ void erase_page(uint32_t addr)
 }
 
 // Запись данных на флеш-память
-void write_data(uint32_t addr, const uint8_t *data, size_t length)
+void flash_write_data(uint32_t addr, const uint8_t *data, size_t length)
 {
     while (length > 0)
     {
@@ -126,7 +130,7 @@ void write_data(uint32_t addr, const uint8_t *data, size_t length)
 }
 
 // Чтение данных из флеш-памяти
-void read_data(uint32_t addr, uint8_t *buffer, size_t length)
+void flash_read_data(uint32_t addr, uint8_t *buffer, size_t length)
 {
     uint8_t cmd[4] = {CMD_READ_DATA, (addr >> 16) & 0xFF, (addr >> 8) & 0xFF, addr & 0xFF};
     cs_select();

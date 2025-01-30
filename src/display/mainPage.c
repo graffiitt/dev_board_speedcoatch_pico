@@ -5,13 +5,12 @@
 #include "display/disp_watch.h"
 
 static char *nameItems[] = {"display", "train", "memory", "settings", "watch", "item2", "item3"};
-char *desc[] = {"qwerty"};
 static cvector(menu_item_t) main_menu_items = NULL;
 menu_desc_t main_menu = {"menu", 0, &main_menu_items, NULL};
 
 void setupMainPage()
 {
-    menu_item_t item_1 = {nameItems[0], desc[0], NULL, NULL};
+    menu_item_t item_1 = {nameItems[0], NULL, dataDisplay, NULL};
     cvector_push_back(main_menu_items, item_1);
     menu_item_t item_2 = {nameItems[1], NULL, NULL, NULL};
     cvector_push_back(main_menu_items, item_2);
