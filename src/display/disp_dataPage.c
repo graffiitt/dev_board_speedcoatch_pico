@@ -19,8 +19,7 @@ static void drawSplitItem(const uint16_t x, const uint16_t y);
 static void drawDistanse(const uint16_t x, const uint16_t y);
 static void drawChrono(const uint16_t x, const uint16_t y);
 
-#define NUM_ITEMS 6
-static uint8_t currentItems[] = {0, 1, 2, 3};
+static uint8_t *currentItems;
 const char * const itemNameStr[] = {"pulse", "stroke count", "stroke rate", "split", "distance", "chrono"};
 static ItemData_t dataItem[] = {{itemNameStr[0], drawPulseItem},
                                 {itemNameStr[1], drawStrokeCountItem},
@@ -51,6 +50,7 @@ static void painter()
 
 static void stopTrain()
 {
+    free(currentItems);
     vTaskDelete(trainTask_h);
     drawFunction = &drawMenu;
     setupCallbacksMenu();
@@ -61,7 +61,9 @@ void dataDisplay(enum MENU_ACTIONS action)
 {
     if (action != MENU_ACTIONS_RUN)
         return;
-
+    currentItems = malloc(4);
+    flash_read_data(8, currentItems, 4);
+    
     drawFunction = &painter;
     actionBack = stopTrain;
     setButtonHandler(1, NULL);

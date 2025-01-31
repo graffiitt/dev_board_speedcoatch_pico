@@ -1,6 +1,8 @@
 #ifndef MAINPAGE_H
 #define MAINPAGE_H
 
+#define NUM_ITEMS 6
+
 #include <uiElements/ui_menu.h>
 #include "w25qxx/w25qxx.h"
 
@@ -19,5 +21,6 @@ extern void setupMainPage();
 extern void setupSettingsPage();
 extern void setupWatchSettingsDisplay();
 extern void dataDisplay(enum MENU_ACTIONS action);
+extern void setupViewDataPage(enum MENU_ACTIONS action);
 
 #endif

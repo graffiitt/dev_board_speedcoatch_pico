@@ -2,15 +2,19 @@
 #include "hardware/spi.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "pico/stdlib.h"
 
 #if (_W25QXX_USE_FREERTOS == 1)
 #define W25qxx_Delay(delay) vTaskDelay(delay)
 #include "FreeRTOS.h"
 #include "task.h"
+
 #else
 #define W25qxx_Delay(delay) sleep_ms(delay)
 #endif
+
+static uint8_t *cache;
 
 // Функция для выбора чипа (CS)
 static inline void cs_select()
@@ -106,6 +110,16 @@ void flash_erase_page(uint32_t addr)
     spi_write_blocking(SPI_PORT, cmd, 4);
     cs_deselect();
     wait_for_ready();
+}
+
+void flash_write_in_Page(uint16_t page, uint32_t addrInPage, const uint8_t *data, size_t length) 
+{
+    cache = malloc(256);
+    flash_read_data(page*256, cache, 256);
+    memcpy(cache+addrInPage, data, length);
+    flash_erase_page(page);
+    flash_write_data(page*256, cache, 256);
+    free(cache);
 }
 
 // Запись данных на флеш-память

@@ -40,6 +40,7 @@ void flash_erase_sector(uint32_t addr);
 /// @param addr number page
 void flash_erase_page(uint32_t addr);    
 
+void flash_write_in_Page(uint16_t page, uint32_t addrInPage, const uint8_t *data, size_t length);
 void flash_write_data(uint32_t addr, const uint8_t *data, size_t length);
 void flash_read_data(uint32_t addr, uint8_t *buffer, size_t length);
 

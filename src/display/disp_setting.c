@@ -11,7 +11,7 @@ void setupSettingsPage()
 {
     menu_item_t item_1 = {nameItems[0], str_state[1], &bluetoothAction, &bluetooth_menu};
     cvector_push_back(main_settings_items, item_1);
-    menu_item_t item_2 = {nameItems[1], 0, NULL, NULL};
+    menu_item_t item_2 = {nameItems[1], 0, &setupViewDataPage, NULL};
     cvector_push_back(main_settings_items, item_2);
     menu_item_t item_3 = {nameItems[2], 0, NULL, NULL};
     cvector_push_back(main_settings_items, item_3);
