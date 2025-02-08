@@ -4,6 +4,12 @@ output_type: SharpMemoryImage
 # overlaps a previous section, an error will be raised.
 images:
   - path: bluetooth.png
-  - path: satellite-variant.png
-  - path: satellite-uplink.png
+  - path: satellite_variant.png
+  - path: satellite_uplink.png
   - path: hearth.png
+  - path: battery_10.png
+  - path: battery_30.png
+  - path: battery_50.png
+  - path: battery_70.png
+  - path: battery_100.png
+  - path: battery_charging.png

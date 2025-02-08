@@ -63,7 +63,7 @@ void dataDisplay(enum MENU_ACTIONS action)
         return;
     currentItems = malloc(4);
     flash_read_data(8, currentItems, 4);
-    
+
     drawFunction = &painter;
     actionBack = stopTrain;
     setButtonHandler(1, NULL);
@@ -85,7 +85,7 @@ void drawPulseItem(const uint16_t x, const uint16_t y)
     sprintf(str, "%03d", pulse);
     text_str(getText_80(), str);
 
-    drawStatusImage(3, x + 170, y + 77);
+    drawStatusImage(3, x + 166, y + 16);
 }
 
 void drawStrokeCountItem(const uint16_t x, const uint16_t y)

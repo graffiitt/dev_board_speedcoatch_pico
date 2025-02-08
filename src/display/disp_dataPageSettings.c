@@ -35,15 +35,16 @@ static void painter()
 
 static void buttonSelect(enum BUTTON_ACTION act)
 {
-    if(act!= SHORT)return;
+    if (act != SHORT)
+        return;
     drawDisplay();
     bitmap_hline(getBitmap(), 0, 240 - 26, WIDTH);
     getText_24()->x = 0;
     getText_24()->y = 240 - 25;
     text_str(getText_24(), "saving");
-    
+
     flash_write_in_Page(0, 8, elements, 4);
-    
+
     vTaskDelay(2000);
     drawDisplay();
 }
@@ -98,6 +99,8 @@ static void exitScreen()
 
 void setupViewDataPage(enum MENU_ACTIONS action)
 {
+    if (action != MENU_ACTIONS_RUN)
+        return;
     elements = malloc(4);
     flash_read_data(8, elements, 4);
 

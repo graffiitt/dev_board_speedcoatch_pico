@@ -10,6 +10,7 @@
 #include "display/disp_task.h"
 #include "button.h"
 #include "w25qxx/w25qxx.h"
+#include "bluetooth/bluetooth_core.h"
 
 // Delay between led blinking
 #define LED_DELAY_MS 21
@@ -46,17 +47,18 @@ void actionBackButton(enum BUTTON_ACTION act)
 static char taskList[500] = {0};
 void mainTask(__unused void *params)
 {
+   
     xTaskCreate(buttonTask, "buttonHandler", BUTTON_TASK_STACK_SIZE, NULL, BUTTON_TASK_PRIORITY, NULL);
     vTaskDelay(pdMS_TO_TICKS(5000));
-
+    ble_init();
     while (1)
     {
-        printf("task states\n");
-        vTaskList(taskList);
-        printf("%s\n", taskList);
+        //printf("task states\n");
+        // vTaskList(taskList);
+        // printf("%s\n", taskList);
         vTaskDelay(pdMS_TO_TICKS(500));
     }
-};
+}
 
 void vLaunch(void)
 {
@@ -76,7 +78,7 @@ int main(void)
 {
     timer_hw->dbgpause = 0x2;
 
-    // stdio_init_all();
+    stdio_init_all();
     initSPI();
     rtc_init();
     datetime_t t = {

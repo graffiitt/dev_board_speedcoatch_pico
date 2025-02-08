@@ -84,12 +84,14 @@ static void actionButtonDown(enum BUTTON_ACTION act)
 
 static void actionButtonSelect(enum BUTTON_ACTION act)
 {
+    menu_item_t *item = cvector_at(*currentMenu->items, currentMenu->current_row);
     switch (act)
     {
-    case PUSH:
+    case HOLDING:
+        if (item->action != NULL)
+            item->action(MENU_ACTIONS_SELECT_HOLD);
         break;
     case SHORT:
-        menu_item_t *item = cvector_at(*currentMenu->items, currentMenu->current_row);
         if (item->action != NULL)
             item->action(MENU_ACTIONS_RUN);
         if (item->nextMenu != NULL)

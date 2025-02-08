@@ -27,7 +27,7 @@ static const char *status_line = NULL;
 static uint8_t disp_buffer_1[BITMAP_SIZE(WIDTH, HEIGHT)];
 static SemaphoreHandle_t dispSem;
 
-extern bool current_state_ble;
+extern bool state_ble;
 
 struct Bitmap *getBitmap()
 {
@@ -60,7 +60,7 @@ void drawDisplay()
     text_24.y = 0;
     text_str(&text_24, status_line);
 
-    if (current_state_ble)
+    if (state_ble)
     {
         image_draw(&status_images, BLUETOOTH_IMG, 346, 0);
     }

@@ -9,7 +9,7 @@ menu_desc_t settings_menu = {"settings", 0, &main_settings_items, &main_menu};
 
 void setupSettingsPage()
 {
-    menu_item_t item_1 = {nameItems[0], str_state[1], &bluetoothAction, &bluetooth_menu};
+    menu_item_t item_1 = {nameItems[0], str_state[1], &bluetoothAction, NULL};
     cvector_push_back(main_settings_items, item_1);
     menu_item_t item_2 = {nameItems[1], 0, &setupViewDataPage, NULL};
     cvector_push_back(main_settings_items, item_2);

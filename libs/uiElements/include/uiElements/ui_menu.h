@@ -10,7 +10,8 @@ enum MENU_ACTIONS
 {
     MENU_ACTIONS_RUN,
     MENU_ACTIONS_UP,
-    MENU_ACTIONS_DOWN
+    MENU_ACTIONS_DOWN,
+    MENU_ACTIONS_SELECT_HOLD
 };
 
 typedef void (*ui_item_handler)(enum MENU_ACTIONS);

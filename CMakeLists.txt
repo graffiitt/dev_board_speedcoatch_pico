@@ -25,7 +25,9 @@ ${CPPFILE}
 
 target_link_libraries(${PROJECT_NAME}
     pico_stdlib
+    hardware_rtc
     FreeRTOS-Kernel-Heap4
+    
     SHARPDISP
     BITMAPSHAPES
     BITMAPTEXT
@@ -35,7 +37,7 @@ target_link_libraries(${PROJECT_NAME}
     
     UI_LIBRARY
     W25QXX
-    hardware_rtc
+    bluetooth
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
@@ -53,6 +55,7 @@ add_subdirectory(libs/sharpDisplay)
 add_subdirectory(libs/uiElements)
 add_subdirectory(libs/pico-button-handler)
 add_subdirectory(libs/w25qxx)
+add_subdirectory(libs/bluetooth)
 
 pico_add_extra_outputs(${PROJECT_NAME})
 pico_enable_stdio_usb(${PROJECT_NAME} 1)
