@@ -1,32 +1,14 @@
 #include "bluetooth/bluetooth_core.h"
 #include "mygatt.h"
 
-typedef enum
-{
-    TC_OFF,
-    TC_IDLE,
-    TC_W4_SCAN_RESULT,
-    TC_W4_CONNECT,
-    TC_W4_SERVICE_RESULT,
-    TC_W4_HEART_RATE_MEASUREMENT_CHARACTERISTIC,
-    TC_W4_ENABLE_NOTIFICATIONS_COMPLETE,
-    TC_W4_SENSOR_LOCATION_CHARACTERISTIC,
-    TC_W4_SENSOR_LOCATION,
-    TC_CONNECTED
-} gc_state_t;
-
 cvector(ble_device_t) ble_devices = NULL;
-// addr and type of device with correct name
-static bd_addr_t le_streamer_addr;
-static bd_addr_type_t le_streamer_addr_type;
 
-static hci_con_handle_t connection_handle;
-static gatt_client_characteristic_t heart_rate_measurement_characteristic;
+hci_con_handle_t connection_handle;
 
-static gatt_client_notification_t notification_listener;
+gatt_client_notification_t notification_listener;
 int listener_registered;
 
-static gc_state_t state = TC_OFF;
+// static gc_state_t state = TC_OFF;
 static btstack_packet_callback_registration_t hci_event_callback_registration;
 
 // prototypes
@@ -87,32 +69,6 @@ static void dump_advertisement_data(const uint8_t *adv_data, uint8_t adv_size, u
     }
 }
 
-// // handler for seacrh hearth reate service
-// static void pactet_handler_scanner(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size)
-// {
-//     UNUSED(channel);
-//     UNUSED(size);
-
-//     if (packet_type != HCI_EVENT_PACKET)
-//         return;
-
-//     if (hci_event_packet_get_type(packet) == GAP_EVENT_ADVERTISING_REPORT)
-//     {
-//         bd_addr_t address;
-//         uint8_t length;
-
-//         if (!advertisement_report_contains_uuid16(ORG_BLUETOOTH_SERVICE_HEART_RATE, packet))
-//             return;
-//         gap_event_advertising_report_get_address(packet, address);
-//         bd_addr_type_t le_streamer_addr_type = gap_event_advertising_report_get_address_type(packet);
-
-//         length = gap_event_advertising_report_get_data_length(packet);
-//         const uint8_t *data = gap_event_advertising_report_get_data(packet);
-//         printf("Advertisement (legacy) event: addr %s \n", bd_addr_to_str(address));
-//         dump_advertisement_data(data, length, address, le_streamer_addr_type);
-//     }
-// }
-
 static void hci_event_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size)
 {
     UNUSED(channel);
@@ -123,17 +79,6 @@ static void hci_event_handler(uint8_t packet_type, uint16_t channel, uint8_t *pa
 
     switch (hci_event_packet_get_type(packet))
     {
-    case BTSTACK_EVENT_STATE:
-        // BTstack activated, get started
-        if (btstack_event_state_get_state(packet) == HCI_STATE_WORKING)
-        {
-        }
-        else
-        {
-            state = TC_OFF;
-        }
-        break;
-
     case GAP_EVENT_ADVERTISING_REPORT:
         bd_addr_t address;
         uint8_t length;
@@ -155,7 +100,7 @@ static void hci_event_handler(uint8_t packet_type, uint16_t channel, uint8_t *pa
             break;
         connection_handle = gap_subevent_le_connection_complete_get_connection_handle(packet);
         printf("Search for Heart Rate service.\n");
-        state = TC_W4_SERVICE_RESULT;
+        // state = TC_W4_SERVICE_RESULT;
         gatt_client_discover_primary_services_by_uuid16(handle_gatt_client_hrt_event,
                                                         connection_handle,
                                                         ORG_BLUETOOTH_SERVICE_HEART_RATE);
@@ -169,10 +114,7 @@ static void hci_event_handler(uint8_t packet_type, uint16_t channel, uint8_t *pa
             gatt_client_stop_listening_for_characteristic_value_updates(&notification_listener);
         }
 
-        printf("Disconnected %s\n", bd_addr_to_str(le_streamer_addr));
-        if (state == TC_OFF)
-            break;
-        // gatt_heart_rate_client_start();
+        printf("Disconnected\n");
         break;
     default:
         break;
@@ -194,11 +136,7 @@ void append_device(uint8_t *address, char *name, int size_name, bd_addr_type_t a
         size_name = BLE_SIZE_NAME - 1;
     }
     strcpy(it.name, name);
-    // for (uint8_t i = 0; i < size_name; i++)
-    // {
-    //     it.name[i] = name[i];
-    // }
-    // it.name[size_name] = '\0';
+    it.name[size_name] = '\0';
     it.addr_type = addr_type;
     bd_addr_copy(it.address, address);
 
@@ -208,11 +146,11 @@ void append_device(uint8_t *address, char *name, int size_name, bd_addr_type_t a
 
 void ble_init()
 {
-    if(cyw43_arch_init())
+    if (cyw43_arch_init())
     {
         printf("error init ble \n");
         return;
-    } 
+    }
     hci_power_control(HCI_POWER_ON);
 
     uint16_t adv_int_min = 0x0030;
@@ -234,7 +172,6 @@ void ble_init()
     sm_init();
     sm_set_io_capabilities(IO_CAPABILITY_NO_INPUT_NO_OUTPUT);
     hci_power_control(HCI_POWER_OFF);
-
 }
 
 void ble_on()

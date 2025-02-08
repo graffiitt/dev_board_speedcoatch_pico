@@ -15,7 +15,6 @@
 #include <uiElements/ui_menu.h>
 #include "button.h"
 
-
 void (*drawFunction)(void);
 TaskHandle_t displayHandle;
 
@@ -123,9 +122,16 @@ void display_task(__unused void *params)
     setupMainPage();
     setupSettingsPage();
     setupWatchSettingsDisplay();
-    
+    int8_t counter = 0;
     while (true)
     {
+        if (counter > 2)
+        {
+            drawDisplay();
+            counter = 0;
+        }
+        counter++;
+
         xSemaphoreTake(dispSem, portMAX_DELAY);
         taskENTER_CRITICAL();
         sharpdisp_refresh(&sd);

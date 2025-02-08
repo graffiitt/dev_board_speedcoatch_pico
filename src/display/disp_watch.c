@@ -7,7 +7,7 @@
 
 #include "uiElements/ui_spinbox_int.h"
 
-static bool stateTask = true;
+// static bool stateTask = true;
 static void watchStop();
 
 static void painter()
@@ -34,16 +34,16 @@ static void painter()
     }
 }
 
-static void watchTask()
-{
+// static void watchTask()
+// {
 
-    while (stateTask)
-    {
-        drawDisplay();
-        vTaskDelay(100);
-    }
-    vTaskDelete(NULL);
-}
+//     while (stateTask)
+//     {
+//         drawDisplay();
+//         vTaskDelay(100);
+//     }
+//     vTaskDelete(NULL);
+// }
 
 void watchDisplay(enum MENU_ACTIONS action)
 {
@@ -56,14 +56,15 @@ void watchDisplay(enum MENU_ACTIONS action)
     setButtonHandler(2, NULL);
     setButtonHandler(3, NULL);
     drawStatusStr(NULL);
-    stateTask = true;
-    xTaskCreate(watchTask, "watchTask", 140, NULL, 10, NULL);
+    drawDisplay();
+    // stateTask = true;
+   // xTaskCreate(watchTask, "watchTask", 140, NULL, 10, NULL);
 }
 
 void watchStop()
 {
     // vTaskDelete(task);
-    stateTask = false;
+    // stateTask = false;
 
     drawFunction = &drawMenu;
     setupCallbacksMenu();

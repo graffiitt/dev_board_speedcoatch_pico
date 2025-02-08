@@ -3,7 +3,6 @@
 #include "button.h"
 
 extern int listener_registered;
-extern int16_t hearth_rate;
 
 static ble_device_t curr_dev;
 static int8_t current_dev = 0;
@@ -43,7 +42,7 @@ static void painter()
         text_str(getText_24(), curr_dev.name);
         getText_24()->x = x;
         getText_24()->y = y + 31;
-        sprintf(str, "pulse: %03d", hearth_rate);
+        sprintf(str, "pulse: %03d cnt: %d", hrt.heart_rate, hrt.sensor_contact);
         text_str(getText_24(), str);
     }
     else
@@ -73,18 +72,23 @@ static void painter()
 
 static void buttonSelect(enum BUTTON_ACTION act)
 {
+    if (act != SHORT)
+        return;
     if (listener_registered == 1)
     { // disconnect
         ble_disconnect();
+        ble_startScan();
     }
     else
     { // connect
+        if (cvector_size(ble_devices) == 0)
+            return;
         ble_stopScan();
         strcpy(curr_dev.name, cvector_at(ble_devices, current_dev)->name);
-        bd_addr_copy(curr_dev.address,cvector_at(ble_devices, current_dev)->address);
+        bd_addr_copy(curr_dev.address, cvector_at(ble_devices, current_dev)->address);
         curr_dev.addr_type = cvector_at(ble_devices, current_dev)->addr_type;
         ble_clearDevices();
-        
+
         ble_connect(curr_dev.address, curr_dev.addr_type);
     }
 }

@@ -8,6 +8,6 @@ void trainTask(__unused void *params)
     while (1)
     {
         vTaskDelay(pdMS_TO_TICKS(500));
-        drawDisplay();
+       // drawDisplay();
     }
 }

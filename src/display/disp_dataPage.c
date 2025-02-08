@@ -20,7 +20,7 @@ static void drawDistanse(const uint16_t x, const uint16_t y);
 static void drawChrono(const uint16_t x, const uint16_t y);
 
 static uint8_t *currentItems;
-const char * const itemNameStr[] = {"pulse", "stroke count", "stroke rate", "split", "distance", "chrono"};
+const char *const itemNameStr[] = {"pulse", "stroke count", "stroke rate", "split", "distance", "chrono"};
 static ItemData_t dataItem[] = {{itemNameStr[0], drawPulseItem},
                                 {itemNameStr[1], drawStrokeCountItem},
                                 {itemNameStr[2], drawStroceRateItem},
