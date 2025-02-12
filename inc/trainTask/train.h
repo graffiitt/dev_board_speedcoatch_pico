@@ -3,6 +3,6 @@
 
 #include "display/disp_task.h"
 
-void trainTask(__unused void *params);
+void trainTask(void *params);
 
 #endif

@@ -16,7 +16,6 @@ static void ble_on_action()
     item->descrItem = str_state[0];
     state_ble = true;
     ble_on();
-    drawDisplay();
 }
 
 static void ble_off_action()
@@ -25,7 +24,6 @@ static void ble_off_action()
     menu_item_t *item = cvector_at(*settings_menu.items, 0);
     item->descrItem = str_state[1];
     ble_off();
-    drawDisplay();
 }
 
 static void painter()
@@ -147,9 +145,12 @@ void bluetoothAction(enum MENU_ACTIONS action)
     {
     case MENU_ACTIONS_SELECT_HOLD:
         state_ble ? ble_off_action() : ble_on_action();
+        drawDisplay();
         break;
 
     case MENU_ACTIONS_RUN:
+        if (state_ble == false)
+            ble_on_action();
         drawStatusStr(strName);
         drawFunction = &painter;
         actionBack = exitScreen;

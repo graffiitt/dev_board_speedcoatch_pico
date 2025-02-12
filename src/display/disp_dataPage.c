@@ -4,6 +4,7 @@
 #include "hardware/rtc.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "bluetooth/bluetooth_core.h"
 
 typedef void (*itemDrawFunc)(const uint16_t, const uint16_t);
 typedef struct
@@ -64,15 +65,13 @@ void dataDisplay(enum MENU_ACTIONS action)
     currentItems = malloc(4);
     flash_read_data(8, currentItems, 4);
 
-    drawFunction = &painter;
     actionBack = stopTrain;
     setButtonHandler(1, NULL);
     setButtonHandler(2, NULL);
     setButtonHandler(3, NULL);
     drawStatusStr(str);
 
-    drawDisplay();
-    xTaskCreate(trainTask, "train", configMINIMAL_STACK_SIZE, NULL, 20, &trainTask_h);
+    xTaskCreate(trainTask, "train", configMINIMAL_STACK_SIZE, painter, 20, &trainTask_h);
 }
 
 void drawPulseItem(const uint16_t x, const uint16_t y)
@@ -82,7 +81,11 @@ void drawPulseItem(const uint16_t x, const uint16_t y)
     getText_80()->x = x + 16;
     getText_80()->y = y + 16;
     char str[3];
-    sprintf(str, "%03d", pulse);
+    if (hrt.sensor_contact == 3)
+        sprintf(str, "%3d", hrt.heart_rate);
+    else
+        sprintf(str, "---");
+
     text_str(getText_80(), str);
 
     drawStatusImage(3, x + 166, y + 16);

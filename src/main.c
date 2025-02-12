@@ -47,16 +47,15 @@ void actionBackButton(enum BUTTON_ACTION act)
 static char taskList[500] = {0};
 void mainTask(__unused void *params)
 {
-   
+    ble_init();
     xTaskCreate(buttonTask, "buttonHandler", BUTTON_TASK_STACK_SIZE, NULL, BUTTON_TASK_PRIORITY, NULL);
     vTaskDelay(pdMS_TO_TICKS(5000));
-    ble_init();
     while (1)
     {
-        //printf("task states\n");
-        // vTaskList(taskList);
-        // printf("%s\n", taskList);
-        vTaskDelay(pdMS_TO_TICKS(500));
+        printf("task states\n");
+        vTaskList(taskList);
+        printf("%s\n", taskList);
+        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
 
