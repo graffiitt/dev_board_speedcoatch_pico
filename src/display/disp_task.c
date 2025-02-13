@@ -122,6 +122,7 @@ void display_task(__unused void *params)
     setupMainPage();
     setupSettingsPage();
     setupWatchSettingsDisplay();
+    
     int8_t counter = 0;
     while (true)
     {

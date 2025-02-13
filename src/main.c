@@ -78,6 +78,7 @@ int main(void)
     timer_hw->dbgpause = 0x2;
 
     stdio_init_all();
+
     initSPI();
     rtc_init();
     datetime_t t = {

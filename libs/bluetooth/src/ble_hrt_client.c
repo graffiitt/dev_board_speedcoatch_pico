@@ -55,7 +55,7 @@ static void handle_gatt_hrt_meas_event(uint8_t packet_type, uint16_t channel, ui
         if (att_status != ATT_ERROR_SUCCESS)
         {
             printf("CHARACTERISTIC_QUERY_RESULT - ATT Error 0x%02x.\n", att_status);
-            gap_disconnect(connection_handle);
+            // gap_disconnect(connection_handle);
             break;
         }
         // register handler for notifications
@@ -89,7 +89,7 @@ void handle_gatt_client_hrt_event(uint8_t packet_type, uint16_t channel, uint8_t
         att_status = gatt_event_query_complete_get_att_status(packet);
         if (att_status != ATT_ERROR_SUCCESS)
         {
-            gap_disconnect(connection_handle);
+            // gap_disconnect(connection_handle);
             break;
         }
         printf("Search for Heart Rate Measurement characteristic.\n");
