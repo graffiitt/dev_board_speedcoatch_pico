@@ -38,6 +38,7 @@ target_link_libraries(${PROJECT_NAME}
     UI_LIBRARY
     W25QXX
     bluetooth
+    mpu
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
@@ -51,11 +52,7 @@ add_compile_options(-Wall
         -Wno-maybe-uninitialized
     )
 
-add_subdirectory(libs/sharpDisplay)
-add_subdirectory(libs/uiElements)
-add_subdirectory(libs/pico-button-handler)
-add_subdirectory(libs/w25qxx)
-add_subdirectory(libs/bluetooth)
+add_subdirectory(libs)
 
 pico_add_extra_outputs(${PROJECT_NAME})
 pico_enable_stdio_usb(${PROJECT_NAME} 1)

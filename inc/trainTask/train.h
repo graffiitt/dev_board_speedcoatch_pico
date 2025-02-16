@@ -5,4 +5,6 @@
 
 void trainTask(void *params);
 
+void endTrain();
+
 #endif

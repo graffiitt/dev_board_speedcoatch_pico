@@ -19,5 +19,5 @@ void drawDisplay();
 void drawStatusStr(const char *str);
 
 void display_task(__unused void *params);
-
+void showStartScreen();
 #endif

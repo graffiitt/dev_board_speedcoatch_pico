@@ -4,6 +4,7 @@
 #include "display/page.h"
 #include <sharpdisp/bitmapimage.h>
 
+
 uint8_t *image;
 
 static void paintImage()
@@ -34,4 +35,8 @@ void trainTask(void *params)
         vTaskDelay(pdMS_TO_TICKS(500));
         // drawDisplay();
     }
+}
+
+void endTrain()
+{
 }

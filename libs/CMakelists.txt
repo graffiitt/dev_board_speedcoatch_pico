@@ -1,0 +1,6 @@
+add_subdirectory(sharpDisplay)
+add_subdirectory(uiElements)
+add_subdirectory(pico-button-handler)
+add_subdirectory(w25qxx)
+add_subdirectory(bluetooth)
+add_subdirectory(mpu)

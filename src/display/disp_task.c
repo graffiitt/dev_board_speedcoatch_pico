@@ -82,7 +82,7 @@ static void show_image(uint32_t idx, struct BitmapImages *bitmap)
     image_draw(bitmap, idx, x, y);
 }
 
-static void showStartScreen()
+void showStartScreen()
 {
     const char str_logo[] = "SPECTER";
     struct BitmapImages start_image;
@@ -119,9 +119,9 @@ void display_task(__unused void *params)
 
     showStartScreen();
 
-    setupMainPage();
-    setupSettingsPage();
-    setupWatchSettingsDisplay();
+    drawFunction = &drawMenu;
+    setupCallbacksMenu();
+    setMenu(&main_menu);
     
     int8_t counter = 0;
     while (true)

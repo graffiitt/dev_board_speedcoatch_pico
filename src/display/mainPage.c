@@ -25,8 +25,4 @@ void setupMainPage()
     menu_item_t item_7 = {nameItems[6], NULL, NULL, NULL};
     cvector_push_back(main_menu_items, item_7);
     
-    // setup for first menu
-    drawFunction = &drawMenu;
-    setupCallbacksMenu();
-    setMenu(&main_menu);
 }

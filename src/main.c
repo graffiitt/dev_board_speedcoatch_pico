@@ -8,9 +8,11 @@
 #include "hardware/rtc.h"
 
 #include "display/disp_task.h"
+#include "display/page.h"
 #include "button.h"
 #include "w25qxx/w25qxx.h"
 #include "bluetooth/bluetooth_core.h"
+#include "mpu.h"
 
 // Delay between led blinking
 #define LED_DELAY_MS 21
@@ -26,10 +28,33 @@
 #define DISPLAY_TASK_STACK_SIZE configMINIMAL_STACK_SIZE
 
 extern TaskHandle_t displayHandle;
+bool powerState = true;
 
 void (*actionBack)(void);
+
+static void startTasks()
+{
+    xTaskCreate(display_task, "displayDraw", DISPLAY_TASK_STACK_SIZE, NULL, DISPLAY_TASK_PRIORITY, &displayHandle);
+    vTaskCoreAffinitySet(displayHandle, 2);
+}
+
 void actionPower()
 {
+    actionBack = NULL;
+    setButtonHandler(1, NULL);
+    setButtonHandler(2, NULL);
+    setButtonHandler(3, NULL);
+
+    if (powerState)
+    {
+        powerState = false;
+        vTaskDelete(displayHandle);
+    }
+    else
+    {
+        powerState = true;
+        startTasks();
+    }
 }
 
 void actionBackButton(enum BUTTON_ACTION act)
@@ -39,8 +64,10 @@ void actionBackButton(enum BUTTON_ACTION act)
     case SHORT:
         if (actionBack)
             actionBack();
+        break;
     case HOLDING:
         actionPower();
+        break;
     }
 }
 
@@ -48,8 +75,16 @@ static char taskList[500] = {0};
 void mainTask(__unused void *params)
 {
     ble_init();
+    mpu_init();
     xTaskCreate(buttonTask, "buttonHandler", BUTTON_TASK_STACK_SIZE, NULL, BUTTON_TASK_PRIORITY, NULL);
+
+    startTasks();
+
+    setupMainPage();
+    setupSettingsPage();
+    setupWatchSettingsDisplay();
     vTaskDelay(pdMS_TO_TICKS(5000));
+
     while (1)
     {
         printf("task states\n");
@@ -65,10 +100,8 @@ void vLaunch(void)
     setButtonHandler(0, actionBackButton);
 
     xTaskCreate(mainTask, "mainTask", 526, NULL, tskIDLE_PRIORITY, &mainTsk);
-    xTaskCreate(display_task, "displayDraw", DISPLAY_TASK_STACK_SIZE, NULL, DISPLAY_TASK_PRIORITY, &displayHandle);
     // we must bind the main task to one core (well at least while the init is called)
     vTaskCoreAffinitySet(mainTsk, 1);
-    vTaskCoreAffinitySet(displayHandle, 2);
 
     vTaskStartScheduler();
 }

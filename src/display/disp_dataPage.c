@@ -13,6 +13,7 @@ typedef struct
     itemDrawFunc draw;
 } ItemData_t;
 
+static void stopTrain();
 static void drawPulseItem(const uint16_t x, const uint16_t y);
 static void drawStrokeCountItem(const uint16_t x, const uint16_t y);
 static void drawStroceRateItem(const uint16_t x, const uint16_t y);
@@ -49,13 +50,52 @@ static void painter()
     bitmap_vline(getBitmap(), 200, 26, HEIGHT - 26);
 }
 
-static void stopTrain()
+char applyTitle[] = "stop train";
+
+static void painterApplyPage()
 {
+    getText_24()->x = 0;
+    getText_24()->y = 27;
+    text_str(getText_24(), "1 save train");
+    getText_24()->x = 0;
+    getText_24()->y = 51;
+    text_str(getText_24(), "2 cancel");
+}
+
+void yesButtonApply(enum BUTTON_ACTION act)
+{
+    if (act != SHORT)
+        return;
+
+    endTrain();
     free(currentItems);
     vTaskDelete(trainTask_h);
     drawFunction = &drawMenu;
     setupCallbacksMenu();
     setMenu(&main_menu);
+}
+
+void noButtonApply(enum BUTTON_ACTION act)
+{
+    if (act != SHORT)
+        return;
+
+    actionBack = stopTrain;
+    setButtonHandler(1, NULL);
+    setButtonHandler(2, NULL);
+    drawStatusStr(str);
+    drawFunction = painter;
+}
+
+void stopTrain()
+{
+    
+    actionBack = NULL;
+    setButtonHandler(1, yesButtonApply);
+    setButtonHandler(2, noButtonApply);
+    drawStatusStr(applyTitle);
+    drawFunction = painterApplyPage;
+    // drawDisplay();
 }
 
 void dataDisplay(enum MENU_ACTIONS action)
@@ -69,6 +109,7 @@ void dataDisplay(enum MENU_ACTIONS action)
     setButtonHandler(1, NULL);
     setButtonHandler(2, NULL);
     setButtonHandler(3, NULL);
+    memset(str, 0, sizeof str);
     drawStatusStr(str);
 
     xTaskCreate(trainTask, "train", configMINIMAL_STACK_SIZE, painter, 20, &trainTask_h);

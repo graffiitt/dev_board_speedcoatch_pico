@@ -3,4 +3,7 @@
 
 bool *result = NULL;
 
-
+void painterApplyPage()
+{
+    
+}

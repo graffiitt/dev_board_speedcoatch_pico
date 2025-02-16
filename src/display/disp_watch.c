@@ -4,8 +4,7 @@
 #include "hardware/rtc.h"
 #include "FreeRTOS.h"
 #include "task.h"
-
-#include "uiElements/ui_spinbox_int.h"
+#include "mpu.h"
 
 // static bool stateTask = true;
 static void watchStop();
@@ -21,15 +20,21 @@ static void painter()
     }
     else
     {
-        getText_80()->x = 0;
-        getText_80()->y = 57;
         char str[40] = {0};
-        sprintf(str, "%02d:%02d:%02d", t.hour, t.min, t.sec);
 
+        getText_80()->x = 30;
+        getText_80()->y = 57;
+        sprintf(str, "%02d:%02d:%02d", t.hour, t.min, t.sec);
         text_str(getText_80(), str);
-        getText_24()->x = 0;
-        getText_24()->y = 137;
+
+        getText_24()->x = 30;
+        getText_24()->y = 147;
         sprintf(str, "%2d.%2d", t.day, t.month);
+        text_str(getText_24(), str);
+
+        getText_24()->x = 120;
+        getText_24()->y = 147;
+        sprintf(str, "%.1f", (mpu_getTemp()/340.0)+36.53);
         text_str(getText_24(), str);
     }
 }
@@ -49,7 +54,7 @@ void watchDisplay(enum MENU_ACTIONS action)
 {
     if (action != MENU_ACTIONS_RUN)
         return;
-
+    mpu_sleep(false);
     drawFunction = &painter;
     actionBack = watchStop;
     setButtonHandler(1, NULL);
@@ -67,6 +72,7 @@ void watchStop()
     // stateTask = false;
 
     drawFunction = &drawMenu;
+    mpu_sleep(true);
     setupCallbacksMenu();
     setMenu(&main_menu);
 }
