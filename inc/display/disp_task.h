@@ -17,6 +17,7 @@ struct BitmapText *getText_80();
 
 void drawDisplay();
 void drawStatusStr(const char *str);
+void drawChargeState(int8_t indexImg);
 
 void display_task(__unused void *params);
 void showStartScreen();

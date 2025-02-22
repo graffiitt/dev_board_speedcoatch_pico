@@ -160,7 +160,9 @@ void bluetoothAction(enum MENU_ACTIONS action)
         drawDisplay();
 
         if (listener_registered != 1)
+        {
             ble_startScan();
+        }
         break;
     }
 }

@@ -13,6 +13,7 @@
 #include "w25qxx/w25qxx.h"
 #include "bluetooth/bluetooth_core.h"
 #include "mpu.h"
+#include "battery.h"
 
 // Delay between led blinking
 #define LED_DELAY_MS 21
@@ -87,10 +88,11 @@ void mainTask(__unused void *params)
 
     while (1)
     {
-        printf("task states\n");
-        vTaskList(taskList);
-        printf("%s\n", taskList);
+        // printf("task states\n");
+        // vTaskList(taskList);
+        // printf("%s\n", taskList);
         vTaskDelay(pdMS_TO_TICKS(1000));
+        drawChargeState(adc_getImageCharge());
     }
 }
 
@@ -101,17 +103,17 @@ void vLaunch(void)
 
     xTaskCreate(mainTask, "mainTask", 526, NULL, tskIDLE_PRIORITY, &mainTsk);
     // we must bind the main task to one core (well at least while the init is called)
-    vTaskCoreAffinitySet(mainTsk, 1);
+    // vTaskCoreAffinitySet(mainTsk, 1);
 
     vTaskStartScheduler();
 }
 
 int main(void)
 {
-    timer_hw->dbgpause = 0x2;
+    timer_hw->dbgpause = 0x2 | 0x4;
 
     stdio_init_all();
-
+    setup_adc();
     initSPI();
     rtc_init();
     datetime_t t = {

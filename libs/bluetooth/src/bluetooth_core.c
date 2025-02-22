@@ -1,19 +1,45 @@
 #include "bluetooth/bluetooth_core.h"
 #include "mygatt.h"
 
-cvector(ble_device_t) ble_devices = NULL;
+extern uint8_t battery;
 
+static int le_notification_enabled; // for transmit data
+int listener_registered;            // for heart rate
 hci_con_handle_t connection_handle;
 
-gatt_client_notification_t notification_listener;
-int listener_registered;
+cvector(ble_device_t) ble_devices = NULL;
 
-// static gc_state_t state = TC_OFF;
-static btstack_packet_callback_registration_t hci_event_callback_registration;
+static bool isConnected = false;
+gatt_client_notification_t notification_listener;
+btstack_packet_callback_registration_t hci_event_hrt_callback_registration;
+static btstack_packet_callback_registration_t hci_event_data_callback_reg;
+
+const uint8_t adv_data[] = {
+    // Flags general discoverable
+    0x02,
+    BLUETOOTH_DATA_TYPE_FLAGS,
+    0x06,
+    // Name
+    0x07,
+    BLUETOOTH_DATA_TYPE_COMPLETE_LOCAL_NAME,
+    'S',
+    'P',
+    'E',
+    'C',
+    'T',
+    'R',
+    // Incomplete List of 16-bit Service Class UUIDs -- FF10 - only valid for testing!
+    0x03,
+    BLUETOOTH_DATA_TYPE_INCOMPLETE_LIST_OF_16_BIT_SERVICE_CLASS_UUIDS,
+    0x10,
+    0xff,
+};
 
 // prototypes
 extern void drawDisplay();
 extern void handle_gatt_client_hrt_event(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
+
+static void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size);
 static void append_device(uint8_t *address, char *name, int size_name, bd_addr_type_t addr_type);
 
 // returns 1 if name is found in advertisement
@@ -69,7 +95,7 @@ static void dump_advertisement_data(const uint8_t *adv_data, uint8_t adv_size, u
     }
 }
 
-static void hci_event_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size)
+static void hci_event_hrt_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size)
 {
     UNUSED(channel);
     UNUSED(size);
@@ -113,12 +139,70 @@ static void hci_event_handler(uint8_t packet_type, uint16_t channel, uint8_t *pa
             listener_registered = 0;
             gatt_client_stop_listening_for_characteristic_value_updates(&notification_listener);
         }
-
+        // hci_remove_event_handler(&hci_event_hrt_callback_registration);
         printf("Disconnected\n");
         break;
     default:
         break;
     }
+}
+
+void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size)
+{
+    UNUSED(channel);
+    UNUSED(size);
+
+    if (packet_type != HCI_EVENT_PACKET)
+        return;
+
+    switch (hci_event_packet_get_type(packet))
+    {
+    case HCI_EVENT_DISCONNECTION_COMPLETE:
+        le_notification_enabled = 0;
+        break;
+    case ATT_EVENT_CAN_SEND_NOW:
+        // att_server_notify(connection_handle,
+        //                   ATT_CHARACTERISTIC_0000FF11_0000_1000_8000_00805F9B34FB_01_VALUE_HANDLE,
+        //                   (uint8_t *)counter_string,
+        //                   counter_string_len);
+        break;
+    default:
+        break;
+    }
+}
+
+static uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, uint8_t *buffer, uint16_t buffer_size)
+{
+    UNUSED(connection_handle);
+
+    switch (att_handle)
+    {
+    case ATT_CHARACTERISTIC_0000FF11_0000_1000_8000_00805F9B34FB_01_VALUE_HANDLE:
+        // return att_read_callback_handle_blob((const uint8_t *)counter_string, counter_string_len, offset, buffer, buffer_size);
+        break;
+
+    default:
+        break;
+    }
+    return 0;
+}
+
+static int att_write_callback(hci_con_handle_t con_handle, uint16_t att_handle, uint16_t transaction_mode, uint16_t offset, uint8_t *buffer, uint16_t buffer_size)
+{
+    switch (att_handle)
+    {
+    case ATT_CHARACTERISTIC_0000FF11_0000_1000_8000_00805F9B34FB_01_CLIENT_CONFIGURATION_HANDLE:
+        le_notification_enabled = little_endian_read_16(buffer, 0) == GATT_CLIENT_CHARACTERISTICS_CONFIGURATION_NOTIFICATION;
+        connection_handle = con_handle;
+        break;
+    case ATT_CHARACTERISTIC_0000FF11_0000_1000_8000_00805F9B34FB_01_VALUE_HANDLE:
+        printf("Write: transaction mode %u, offset %u, data (%u bytes): ", transaction_mode, offset, buffer_size);
+        printf_hexdump(buffer, buffer_size);
+        break;
+    default:
+        break;
+    }
+    return 0;
 }
 
 void append_device(uint8_t *address, char *name, int size_name, bd_addr_type_t addr_type)
@@ -153,29 +237,36 @@ void ble_init()
     }
     hci_power_control(HCI_POWER_ON);
 
+    l2cap_init();
+    gatt_client_init();
+    sm_init();
+    sm_set_io_capabilities(IO_CAPABILITY_NO_INPUT_NO_OUTPUT);
+
+    att_server_init(profile_data, att_read_callback, att_write_callback);
+    battery_service_server_init(battery);
+    att_server_register_packet_handler(packet_handler);
+
     uint16_t adv_int_min = 0x0030;
     uint16_t adv_int_max = 0x0030;
     uint8_t adv_type = 0;
     bd_addr_t null_addr;
     memset(null_addr, 0, 6);
     gap_advertisements_set_params(adv_int_min, adv_int_max, adv_type, 0, null_addr, 0x07, 0x00);
-    gap_advertisements_set_data(sizeof profile_data, (uint8_t *)profile_data);
+    gap_advertisements_set_data(sizeof adv_data, (uint8_t *)adv_data);
     gap_advertisements_enable(1);
 
-    hci_event_callback_registration.callback = &hci_event_handler;
-    hci_add_event_handler(&hci_event_callback_registration);
+    hci_event_hrt_callback_registration.callback = &hci_event_hrt_handler;
+    hci_event_data_callback_reg.callback = &packet_handler;
+    hci_add_event_handler(&hci_event_data_callback_reg);
+    hci_add_event_handler(&hci_event_hrt_callback_registration);
 
-    l2cap_init();
-
-    gatt_client_init();
-
-    sm_init();
-    sm_set_io_capabilities(IO_CAPABILITY_NO_INPUT_NO_OUTPUT);
     hci_power_control(HCI_POWER_OFF);
 }
 
 void ble_on()
 {
+    hci_add_event_handler(&hci_event_data_callback_reg);
+    hci_add_event_handler(&hci_event_hrt_callback_registration);
     hci_power_control(HCI_POWER_ON);
 }
 
@@ -184,6 +275,8 @@ void ble_off()
     if (listener_registered)
         gap_disconnect(connection_handle);
 
+    hci_remove_event_handler(&hci_event_data_callback_reg);
+    hci_remove_event_handler(&hci_event_hrt_callback_registration);
     hci_power_control(HCI_POWER_OFF);
 }
 

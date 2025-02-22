@@ -27,6 +27,7 @@ static uint8_t disp_buffer_1[BITMAP_SIZE(WIDTH, HEIGHT)];
 static SemaphoreHandle_t dispSem;
 
 extern bool state_ble;
+static int8_t chargeBattImage = BATTERY_10_IMG;
 
 struct Bitmap *getBitmap()
 {
@@ -63,6 +64,7 @@ void drawDisplay()
     {
         image_draw(&status_images, BLUETOOTH_IMG, 346, 0);
     }
+    image_draw(&status_images, chargeBattImage, 370, 0);
 
     xSemaphoreGive(dispSem);
 }
@@ -70,6 +72,11 @@ void drawDisplay()
 void drawStatusStr(const char *str)
 {
     status_line = str;
+}
+
+void drawChargeState(int8_t indexImg)
+{
+    chargeBattImage = indexImg;
 }
 
 static void show_image(uint32_t idx, struct BitmapImages *bitmap)
