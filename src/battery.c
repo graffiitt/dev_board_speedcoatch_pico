@@ -4,8 +4,8 @@
 #include "display/status_line_images.h"
 #include "bluetooth/bluetooth_core.h"
 
-#define MIN_VOLTAGE 3.2f
-#define MAX_VOLTAGE 4.0f
+#define MIN_VOLTAGE 3.0f
+#define MAX_VOLTAGE 4.2f
 #define DELTA_VOLTAGE (MAX_VOLTAGE - MIN_VOLTAGE)
 
 int8_t battery = 0;
@@ -27,6 +27,37 @@ int adc_getImageCharge()
     const float voltage = 3.3f / (1 << 12) * res * 2.61f;
     printf("%d", voltage);
 
+    int8_t per = (uint8_t)((voltage - MIN_VOLTAGE) / DELTA_VOLTAGE * 100);
+    if (per > 100)
+        per = 100;
+    else if (per < 1)
+    {
+        per = 1;
+    }
+    battery = per;
     battery_service_server_set_battery_value(battery);
-    return BATTERY_10_IMG;
+
+    int id = BATTERY_10_IMG;
+    if (battery <= 10)
+    {
+        id = BATTERY_10_IMG;
+    }
+    else if (battery <= 30)
+    {
+        id = BATTERY_30_IMG;
+    }
+    else if (battery <= 50)
+    {
+        id = BATTERY_50_IMG;
+    }
+    else if (battery <= 70)
+    {
+        id = BATTERY_70_IMG;
+    }
+    else if (battery <= 100)
+    {
+        id = BATTERY_100_IMG;
+    }
+
+    return id;
 }

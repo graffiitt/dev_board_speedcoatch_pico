@@ -260,7 +260,7 @@ void ble_init()
     hci_add_event_handler(&hci_event_data_callback_reg);
     hci_add_event_handler(&hci_event_hrt_callback_registration);
 
-    hci_power_control(HCI_POWER_OFF);
+    //hci_power_control(HCI_POWER_OFF);
 }
 
 void ble_on()
