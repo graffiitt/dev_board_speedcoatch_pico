@@ -6,9 +6,9 @@
 #include "pico/stdlib.h"
 
 #if (_W25QXX_USE_FREERTOS == 1)
-#define W25qxx_Delay(delay) vTaskDelay(delay)
 #include "FreeRTOS.h"
 #include "task.h"
+#define W25qxx_Delay(delay) vTaskDelay(delay)
 
 #else
 #define W25qxx_Delay(delay) sleep_ms(delay)
@@ -68,6 +68,7 @@ void initSPI()
 
     // Инициализация SPI
     spi_init(SPI_PORT, 40000 * 1000);
+    flash_exit_power_down();
 }
 
 void flash_enter_power_down()

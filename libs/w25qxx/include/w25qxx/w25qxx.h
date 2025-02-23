@@ -3,7 +3,7 @@
 
 #include "pico/stdio.h"
 
-#define _W25QXX_USE_FREERTOS  0
+#define _W25QXX_USE_FREERTOS  1
 
 // Настройки SPI
 #define SPI_PORT spi1

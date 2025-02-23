@@ -28,19 +28,27 @@
 #define BUTTON_TASK_STACK_SIZE configMINIMAL_STACK_SIZE
 #define DISPLAY_TASK_STACK_SIZE configMINIMAL_STACK_SIZE
 
-extern TaskHandle_t displayHandle;
-bool powerState = true;
+TaskHandle_t buttonHandle;
+TaskHandle_t displayHandle;
+
+static bool powerState = true;
+bool maySleep = true;
 
 void (*actionBack)(void);
+extern void ble_off_action();
 
 static void startTasks()
 {
+    xTaskCreate(buttonTask, "buttonHandler", BUTTON_TASK_STACK_SIZE, NULL, BUTTON_TASK_PRIORITY, &buttonHandle);
     xTaskCreate(display_task, "displayDraw", DISPLAY_TASK_STACK_SIZE, NULL, DISPLAY_TASK_PRIORITY, &displayHandle);
     vTaskCoreAffinitySet(displayHandle, 2);
 }
 
 void actionPower()
 {
+    if (!maySleep)
+        return;
+
     actionBack = NULL;
     setButtonHandler(1, NULL);
     setButtonHandler(2, NULL);
@@ -49,11 +57,18 @@ void actionPower()
     if (powerState)
     {
         powerState = false;
+
+        ble_off_action();
         vTaskDelete(displayHandle);
+        vTaskDelete(buttonHandle);
+        
+        flash_enter_power_down();
     }
     else
     {
         powerState = true;
+        flash_exit_power_down();
+
         startTasks();
     }
 }
@@ -77,7 +92,6 @@ void mainTask(__unused void *params)
 {
     ble_init();
     mpu_init();
-    xTaskCreate(buttonTask, "buttonHandler", BUTTON_TASK_STACK_SIZE, NULL, BUTTON_TASK_PRIORITY, NULL);
 
     startTasks();
 
@@ -88,11 +102,35 @@ void mainTask(__unused void *params)
 
     while (1)
     {
-        // printf("task states\n");
-        // vTaskList(taskList);
-        // printf("%s\n", taskList);
-        vTaskDelay(pdMS_TO_TICKS(1000));
-        drawChargeState(adc_getImageCharge());
+        if (powerState)
+        {
+
+            // printf("task states\n");
+            // vTaskList(taskList);
+            // printf("%s\n", taskList);
+            vTaskDelay(pdMS_TO_TICKS(1000));
+            drawChargeState(adc_getImageCharge());
+        }
+        else
+        {
+            static button_cfg_t bt;
+
+            int8_t state = gpio_get(BUTTON_1);
+            if ((!state) && bt.last_state) // fix pressed
+            {
+                bt.timePress = time_us_32();
+                bt.flag = 1;
+            }
+
+            if (!(state && bt.last_state) &&
+                ((time_us_32() - bt.timePress) > TIME_PRESS_LONG) && bt.flag)
+            {
+                bt.flag = 0;
+                actionPower();
+            }
+            bt.last_state = state;
+            vTaskDelay(UPDATE_BUTTONS_TIME);
+        }
     }
 }
 
@@ -103,13 +141,13 @@ void vLaunch(void)
 
     xTaskCreate(mainTask, "mainTask", 526, NULL, tskIDLE_PRIORITY, &mainTsk);
     // we must bind the main task to one core (well at least while the init is called)
-    // vTaskCoreAffinitySet(mainTsk, 1);
+    vTaskCoreAffinitySet(mainTsk, 1);
 
     vTaskStartScheduler();
 }
 
 int main(void)
-{
+  {
     timer_hw->dbgpause = 0x2 | 0x4;
 
     stdio_init_all();

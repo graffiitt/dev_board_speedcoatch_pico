@@ -6,6 +6,7 @@
 #include "task.h"
 #include "bluetooth/bluetooth_core.h"
 
+extern bool maySleep;
 typedef void (*itemDrawFunc)(const uint16_t, const uint16_t);
 typedef struct
 {
@@ -73,6 +74,7 @@ void yesButtonApply(enum BUTTON_ACTION act)
     drawFunction = &drawMenu;
     setupCallbacksMenu();
     setMenu(&main_menu);
+    maySleep = true;
 }
 
 void noButtonApply(enum BUTTON_ACTION act)
@@ -89,7 +91,7 @@ void noButtonApply(enum BUTTON_ACTION act)
 
 void stopTrain()
 {
-    
+
     actionBack = NULL;
     setButtonHandler(1, yesButtonApply);
     setButtonHandler(2, noButtonApply);
@@ -102,6 +104,7 @@ void dataDisplay(enum MENU_ACTIONS action)
 {
     if (action != MENU_ACTIONS_RUN)
         return;
+    maySleep = false;
     currentItems = malloc(4);
     flash_read_data(8, currentItems, 4);
 

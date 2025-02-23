@@ -10,7 +10,7 @@ bool state_ble = false;
 char *str_state[] = {"on", "off"};
 static const char strName[] = "bluetooth";
 
-static void ble_on_action()
+void ble_on_action()
 {
     menu_item_t *item = cvector_at(*settings_menu.items, 0);
     item->descrItem = str_state[0];
@@ -18,7 +18,7 @@ static void ble_on_action()
     ble_on();
 }
 
-static void ble_off_action()
+void ble_off_action()
 {
     state_ble = false;
     menu_item_t *item = cvector_at(*settings_menu.items, 0);

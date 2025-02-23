@@ -16,7 +16,7 @@
 #include "button.h"
 
 void (*drawFunction)(void);
-TaskHandle_t displayHandle;
+
 
 static struct SharpDisp sd;
 static struct BitmapText text_24;
@@ -127,9 +127,10 @@ void display_task(__unused void *params)
     showStartScreen();
 
     drawFunction = &drawMenu;
+    main_menu.current_row = 0;
     setupCallbacksMenu();
     setMenu(&main_menu);
-    
+
     int8_t counter = 0;
     while (true)
     {

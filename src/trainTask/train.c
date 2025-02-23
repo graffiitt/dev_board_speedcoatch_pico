@@ -4,7 +4,6 @@
 #include "display/page.h"
 #include <sharpdisp/bitmapimage.h>
 
-
 uint8_t *image;
 
 static void paintImage()
@@ -39,4 +38,5 @@ void trainTask(void *params)
 
 void endTrain()
 {
+    
 }
