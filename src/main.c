@@ -13,10 +13,8 @@
 #include "w25qxx/w25qxx.h"
 #include "bluetooth/bluetooth_core.h"
 #include "mpu.h"
+#include "gps.h"
 #include "battery.h"
-
-// Delay between led blinking
-#define LED_DELAY_MS 21
 
 // Priorities of our threads - higher numbers are higher priority
 #define MAIN_TASK_PRIORITY (tskIDLE_PRIORITY + 20UL)
@@ -59,16 +57,16 @@ void actionPower()
         powerState = false;
 
         ble_off_action();
+        gps_off();
+        flash_enter_power_down();
         vTaskDelete(displayHandle);
         vTaskDelete(buttonHandle);
-        
-        flash_enter_power_down();
     }
     else
     {
         powerState = true;
         flash_exit_power_down();
-
+        gps_on();
         startTasks();
     }
 }
@@ -92,9 +90,8 @@ void mainTask(__unused void *params)
 {
     ble_init();
     mpu_init();
-
     startTasks();
-
+    initGps();
     setupMainPage();
     setupSettingsPage();
     setupWatchSettingsDisplay();
@@ -147,22 +144,22 @@ void vLaunch(void)
 }
 
 int main(void)
-  {
+{
     timer_hw->dbgpause = 0x2 | 0x4;
 
     stdio_init_all();
     setup_adc();
     initSPI();
     rtc_init();
-    datetime_t t = {
-        .year = 2025,
-        .month = 01,
-        .day = 020,
-        .dotw = 1, // 0 is Sunday, so 5 is Friday
-        .hour = 15,
-        .min = 45,
-        .sec = 00};
-    rtc_set_datetime(&t);
+    // datetime_t t = {
+    //     .year = 2025,
+    //     .month = 01,
+    //     .day = 020,
+    //     .dotw = 1, // 0 is Sunday, so 5 is Friday
+    //     .hour = 15,
+    //     .min = 45,
+    //     .sec = 00};
+    // rtc_set_datetime(&t);
 
     vLaunch();
     return 0;

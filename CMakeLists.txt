@@ -41,6 +41,7 @@ target_link_libraries(${PROJECT_NAME}
     W25QXX
     bluetooth
     mpu
+    gps
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
@@ -58,4 +59,4 @@ add_subdirectory(libs)
 
 pico_add_extra_outputs(${PROJECT_NAME})
 pico_enable_stdio_usb(${PROJECT_NAME} 0)
-pico_enable_stdio_uart(${PROJECT_NAME} 1)
+pico_enable_stdio_uart(${PROJECT_NAME} 0)
