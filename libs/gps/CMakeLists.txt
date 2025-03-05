@@ -13,4 +13,5 @@ target_link_libraries(gps  INTERFACE
 )
 target_sources(gps  INTERFACE
     ${CMAKE_CURRENT_LIST_DIR}/src/gps.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/uart_parser.c
 )

@@ -1,8 +1,11 @@
 #include "bluetooth/bluetooth_core.h"
 #include "mygatt.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 extern uint8_t battery;
 
+static bool isWork = false;
 static int le_notification_enabled; // for transmit data
 int listener_registered;            // for heart rate
 hci_con_handle_t connection_handle;
@@ -235,7 +238,46 @@ void ble_init()
         printf("error init ble \n");
         return;
     }
+    cyw43_arch_disable_ap_mode();
+    cyw43_arch_disable_sta_mode();
+    // hci_power_control(HCI_POWER_ON);
+
+    // l2cap_init();
+    // gatt_client_init();
+    // sm_init();
+    // sm_set_io_capabilities(IO_CAPABILITY_NO_INPUT_NO_OUTPUT);
+
+    // att_server_init(profile_data, att_read_callback, att_write_callback);
+    // battery_service_server_init(battery);
+    // att_server_register_packet_handler(packet_handler);
+
+    // uint16_t adv_int_min = 0x0030;
+    // uint16_t adv_int_max = 0x0030;
+    // uint8_t adv_type = 0;
+    // bd_addr_t null_addr;
+    // memset(null_addr, 0, 6);
+    // gap_advertisements_set_params(adv_int_min, adv_int_max, adv_type, 0, null_addr, 0x07, 0x00);
+    // gap_advertisements_set_data(sizeof adv_data, (uint8_t *)adv_data);
+    // gap_advertisements_enable(1);
+
+    // hci_event_hrt_callback_registration.callback = &hci_event_hrt_handler;
+    // hci_event_data_callback_reg.callback = &packet_handler;
+    // hci_add_event_handler(&hci_event_data_callback_reg);
+    // hci_add_event_handler(&hci_event_hrt_callback_registration);
+
+    // hci_power_control(HCI_POWER_OFF);
+}
+
+void ble_on()
+{
+    // hci_add_event_handler(&hci_event_data_callback_reg);
+    // hci_add_event_handler(&hci_event_hrt_callback_registration);
+    // hci_power_control(HCI_POWER_ON);
+    isWork = true;
+   
     hci_power_control(HCI_POWER_ON);
+    // cyw43_arch_disable_ap_mode();
+    // cyw43_arch_disable_sta_mode();
 
     l2cap_init();
     gatt_client_init();
@@ -259,25 +301,21 @@ void ble_init()
     hci_event_data_callback_reg.callback = &packet_handler;
     hci_add_event_handler(&hci_event_data_callback_reg);
     hci_add_event_handler(&hci_event_hrt_callback_registration);
-
-    // hci_power_control(HCI_POWER_OFF);
-}
-
-void ble_on()
-{
-    hci_add_event_handler(&hci_event_data_callback_reg);
-    hci_add_event_handler(&hci_event_hrt_callback_registration);
-    hci_power_control(HCI_POWER_ON);
 }
 
 void ble_off()
 {
+    if(!isWork) return;
     if (listener_registered)
         gap_disconnect(connection_handle);
 
     hci_remove_event_handler(&hci_event_data_callback_reg);
     hci_remove_event_handler(&hci_event_hrt_callback_registration);
+    att_server_deinit();
+    sm_deinit();
+    l2cap_deinit();
     hci_power_control(HCI_POWER_OFF);
+    // cyw43_arch_deinit();
 }
 
 void ble_clearDevices()

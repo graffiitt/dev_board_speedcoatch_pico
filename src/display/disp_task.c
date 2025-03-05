@@ -142,9 +142,9 @@ void display_task(__unused void *params)
         counter++;
 
         xSemaphoreTake(dispSem, portMAX_DELAY);
-        taskENTER_CRITICAL();
+        // taskENTER_CRITICAL();
         sharpdisp_refresh(&sd);
-        taskEXIT_CRITICAL();
+        // taskEXIT_CRITICAL();
         xSemaphoreGive(dispSem);
         vTaskDelay(pdMS_TO_TICKS(100));
     }

@@ -6,7 +6,7 @@
 #include "task.h"
 
 #include "hardware/rtc.h"
-
+#include "hardware/clocks.h"
 #include "display/disp_task.h"
 #include "display/page.h"
 #include "button.h"
@@ -19,12 +19,14 @@
 // Priorities of our threads - higher numbers are higher priority
 #define MAIN_TASK_PRIORITY (tskIDLE_PRIORITY + 20UL)
 #define BUTTON_TASK_PRIORITY (tskIDLE_PRIORITY + 21UL)
-#define DISPLAY_TASK_PRIORITY (tskIDLE_PRIORITY + 21UL)
+#define DISPLAY_TASK_PRIORITY (tskIDLE_PRIORITY + 22UL)
 
 // Stack sizes of our threads in words (4 bytes)
 #define MAIN_TASK_STACK_SIZE configMINIMAL_STACK_SIZE
 #define BUTTON_TASK_STACK_SIZE configMINIMAL_STACK_SIZE
 #define DISPLAY_TASK_STACK_SIZE configMINIMAL_STACK_SIZE
+
+#define PLL_SYS_KHZ (133 * 1000)
 
 TaskHandle_t buttonHandle;
 TaskHandle_t displayHandle;
@@ -59,11 +61,25 @@ void actionPower()
         ble_off_action();
         gps_off();
         flash_enter_power_down();
+
+        vTaskDelay(2000);
+        clock_configure(
+            clk_sys,
+            CLOCKS_CLK_SYS_CTRL_SRC_VALUE_CLKSRC_CLK_SYS_AUX,
+            CLOCKS_CLK_SYS_CTRL_AUXSRC_VALUE_CLKSRC_PLL_SYS,
+            PLL_SYS_KHZ,
+            PLL_SYS_KHZ / 10);
         vTaskDelete(displayHandle);
         vTaskDelete(buttonHandle);
     }
     else
     {
+        clock_configure(
+            clk_sys,
+            CLOCKS_CLK_SYS_CTRL_SRC_VALUE_CLKSRC_CLK_SYS_AUX,
+            CLOCKS_CLK_SYS_CTRL_AUXSRC_VALUE_CLKSRC_PLL_SYS,
+            PLL_SYS_KHZ * 1000, // Input frequency
+            PLL_SYS_KHZ * 1000);
         powerState = true;
         flash_exit_power_down();
         gps_on();
@@ -138,7 +154,7 @@ void vLaunch(void)
 
     xTaskCreate(mainTask, "mainTask", 526, NULL, tskIDLE_PRIORITY, &mainTsk);
     // we must bind the main task to one core (well at least while the init is called)
-    vTaskCoreAffinitySet(mainTsk, 1);
+    // vTaskCoreAffinitySet(mainTsk, 1);
 
     vTaskStartScheduler();
 }
@@ -151,15 +167,15 @@ int main(void)
     setup_adc();
     initSPI();
     rtc_init();
-    // datetime_t t = {
-    //     .year = 2025,
-    //     .month = 01,
-    //     .day = 020,
-    //     .dotw = 1, // 0 is Sunday, so 5 is Friday
-    //     .hour = 15,
-    //     .min = 45,
-    //     .sec = 00};
-    // rtc_set_datetime(&t);
+    datetime_t t = {
+        .year = 2025,
+        .month = 01,
+        .day = 020,
+        .dotw = 1, // 0 is Sunday, so 5 is Friday
+        .hour = 15,
+        .min = 45,
+        .sec = 00};
+    rtc_set_datetime(&t);
 
     vLaunch();
     return 0;

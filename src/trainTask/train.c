@@ -4,6 +4,8 @@
 #include "display/page.h"
 #include <sharpdisp/bitmapimage.h>
 
+#include "gps.h"
+
 uint8_t *image;
 
 static void paintImage()
@@ -26,6 +28,7 @@ static void paintImage()
 void trainTask(void *params)
 {
     drawFunction = paintImage;
+    
     vTaskDelay(5000);
     drawFunction = params;
 
@@ -33,10 +36,12 @@ void trainTask(void *params)
     {
         vTaskDelay(pdMS_TO_TICKS(500));
         // drawDisplay();
+        gps_parce_buffer();
     }
 }
 
 void endTrain()
 {
     
+
 }
