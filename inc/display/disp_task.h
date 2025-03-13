@@ -13,6 +13,7 @@ extern void (*drawFunction)(void);
 
 struct Bitmap *getBitmap();
 struct BitmapText *getText_24();
+struct BitmapText *getText_48();
 struct BitmapText *getText_80();
 
 void drawDisplay();

@@ -35,8 +35,8 @@ void trainTask(void *params)
     while (1)
     {
         vTaskDelay(pdMS_TO_TICKS(500));
-        // drawDisplay();
-        gps_parce_buffer();
+
+        gps_calc_distance();
     }
 }
 

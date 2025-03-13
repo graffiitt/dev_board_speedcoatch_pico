@@ -7,6 +7,7 @@ extern const char *const itemNameStr[];
 static const char strName[] = "view elements data";
 static uint8_t *elements;
 static int8_t currentItem = 0;
+static bool saving = false;
 
 static void paintLine(const int x, const int y, const char *str)
 {
@@ -31,22 +32,22 @@ static void painter()
     getText_24()->y = 37 + (text_height(getText_24()) + 7) * currentItem;
     getText_24()->x = 0;
     text_char(getText_24(), '>');
+    if (saving)
+    {
+        bitmap_hline(getBitmap(), 0, 240 - 26, WIDTH);
+        getText_24()->x = 0;
+        getText_24()->y = 240 - 25;
+        text_str(getText_24(), "saving");
+    }
 }
 
 static void buttonSelect(enum BUTTON_ACTION act)
 {
     if (act != SHORT)
         return;
-    drawDisplay();
-    bitmap_hline(getBitmap(), 0, 240 - 26, WIDTH);
-    getText_24()->x = 0;
-    getText_24()->y = 240 - 25;
-    text_str(getText_24(), "saving");
 
+    saving = true;
     flash_write_in_Page(0, 8, elements, 4);
-
-    vTaskDelay(2000);
-    drawDisplay();
 }
 
 static void buttonUp(enum BUTTON_ACTION act)
@@ -101,6 +102,7 @@ void setupViewDataPage(enum MENU_ACTIONS action)
 {
     if (action != MENU_ACTIONS_RUN)
         return;
+    saving = false;
     elements = malloc(4);
     flash_read_data(8, elements, 4);
 

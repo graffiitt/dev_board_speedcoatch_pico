@@ -17,12 +17,10 @@
 #include "battery.h"
 
 // Priorities of our threads - higher numbers are higher priority
-#define MAIN_TASK_PRIORITY (tskIDLE_PRIORITY + 20UL)
-#define BUTTON_TASK_PRIORITY (tskIDLE_PRIORITY + 21UL)
-#define DISPLAY_TASK_PRIORITY (tskIDLE_PRIORITY + 22UL)
+#define BUTTON_TASK_PRIORITY (tskIDLE_PRIORITY + 7UL)
+#define DISPLAY_TASK_PRIORITY (tskIDLE_PRIORITY + 6UL)
 
 // Stack sizes of our threads in words (4 bytes)
-#define MAIN_TASK_STACK_SIZE configMINIMAL_STACK_SIZE
 #define BUTTON_TASK_STACK_SIZE configMINIMAL_STACK_SIZE
 #define DISPLAY_TASK_STACK_SIZE configMINIMAL_STACK_SIZE
 
@@ -152,7 +150,7 @@ void vLaunch(void)
     xTaskHandle mainTsk;
     setButtonHandler(0, actionBackButton);
 
-    xTaskCreate(mainTask, "mainTask", 526, NULL, tskIDLE_PRIORITY, &mainTsk);
+    xTaskCreate(mainTask, "mainTask", 256, NULL, tskIDLE_PRIORITY, &mainTsk);
     // we must bind the main task to one core (well at least while the init is called)
     // vTaskCoreAffinitySet(mainTsk, 1);
 
@@ -163,7 +161,7 @@ int main(void)
 {
     timer_hw->dbgpause = 0x2 | 0x4;
 
-    stdio_init_all();
+   // stdio_init_all();
     setup_adc();
     initSPI();
     rtc_init();

@@ -3,13 +3,10 @@
 #include "hardware/uart.h"
 #include "hardware/irq.h"
 #include "gps.h"
-#include "FreeRTOS.h"
-#include "task.h"
 #include "pico/util/queue.h"
 
 #define SIZE_FIFO 5
-
-static TaskHandle_t gpsHandle;
+extern TaskHandle_t gpsTaskHandle;
 static uint8_t msg_buf[SIZE_FIFO][100] = {0};
 
 static queue_t fifo;
@@ -20,6 +17,7 @@ void on_uart_rx()
 {
     // uint32_t ulPreviousMask;
     // ulPreviousMask = taskENTER_CRITICAL_FROM_ISR();
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
     while (uart_is_readable(UART_ID))
     {
@@ -45,7 +43,11 @@ void on_uart_rx()
         if (ch == '\n')
         {
             nmea = 0;
-           // queue_try_add(&fifo, msg_buf[num_buffer]);
+            if (gpsTaskHandle)
+            {
+                queue_try_add(&fifo, &num_buffer);
+                vTaskNotifyGiveFromISR(gpsTaskHandle, &xHigherPriorityTaskWoken);
+            }
             num_buffer++;
             if (num_buffer == SIZE_FIFO)
                 num_buffer = 0;
@@ -53,12 +55,12 @@ void on_uart_rx()
         }
     }
     // taskEXIT_CRITICAL_FROM_ISR( ulPreviousMask );
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
-
 
 void gps_init_perih()
 {
-    queue_init(&fifo, sizeof(uint8_t *), SIZE_FIFO);
+    queue_init(&fifo, sizeof(uint8_t), SIZE_FIFO);
     uart_init(UART_ID, BAUD_RATE);
     gpio_set_function(UART_TX_PIN, UART_FUNCSEL_NUM(UART_ID, UART_TX_PIN));
     gpio_set_function(UART_RX_PIN, UART_FUNCSEL_NUM(UART_ID, UART_RX_PIN));
@@ -72,12 +74,29 @@ void gps_init_perih()
 }
 
 // train task
-void gps_parce_buffer()
+// void gps_parce_buffer()
+// {
+//     if (queue_is_empty(&fifo))
+//         return;
+//     uint8_t *msg;
+//     if (!queue_try_remove(&fifo, msg))
+//         return;
+//     gps_parce_msg(msg);
+// }
+
+void gpsTask()
 {
-    if (queue_is_empty(&fifo))
-        return;
-    uint8_t *msg;
-    if (!queue_try_remove(&fifo, msg))
-        return;
-    gps_parce_msg(msg);
+
+    while (1)
+    {
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        uint8_t numBuf;
+        while (queue_try_remove(&fifo, &numBuf))
+        { 
+            uint8_t buf[100];
+            memcpy(buf, msg_buf[numBuf], sizeof buf);
+            gps_parce_msg(buf);
+        }
+        taskYIELD();
+    }
 }

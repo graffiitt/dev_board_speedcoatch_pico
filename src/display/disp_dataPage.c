@@ -5,6 +5,8 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "bluetooth/bluetooth_core.h"
+#include "gps.h"
+#include "math.h"
 
 extern bool maySleep;
 typedef void (*itemDrawFunc)(const uint16_t, const uint16_t);
@@ -115,13 +117,11 @@ void dataDisplay(enum MENU_ACTIONS action)
     memset(str, 0, sizeof str);
     drawStatusStr(str);
 
-    xTaskCreate(trainTask, "train", configMINIMAL_STACK_SIZE, painter, 20, &trainTask_h);
+    xTaskCreate(trainTask, "train", configMINIMAL_STACK_SIZE, painter, 8, &trainTask_h);
 }
 
 void drawPulseItem(const uint16_t x, const uint16_t y)
 {
-    uint8_t pulse = 123;
-
     getText_80()->x = x + 16;
     getText_80()->y = y + 16;
     char str[3];
@@ -145,10 +145,26 @@ void drawStroceRateItem(const uint16_t x, const uint16_t y)
 
 void drawSplitItem(const uint16_t x, const uint16_t y)
 {
+    getText_48()->x = x + 16;
+    getText_48()->y = y + 32;
+    char str[5];
+    double min, sec;
+    if (current_state_gps.speed > MINIMUM_SPEED)
+        sec = modf(30 / current_state_gps.speed, &min);
+    else
+        sec = min = 0;
+    sprintf(str, "%02d:%02d", (int)min, (int)(sec * 60));
+    text_str(getText_48(), str);
 }
 
 void drawDistanse(const uint16_t x, const uint16_t y)
 {
+    getText_48()->x = x + 16;
+    getText_48()->y = y + 32;
+    char str[10];
+    sprintf(str, "%.2lf", current_state_gps.distance);
+
+    text_str(getText_48(), str);
 }
 
 void drawChrono(const uint16_t x, const uint16_t y)
